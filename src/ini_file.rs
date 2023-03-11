@@ -6,7 +6,7 @@ pub type IniFile = HashMap<String, HashMap<String, String>>;
 const DEFAULT_SECTION_NAME: &str = "";
 
 
-pub fn parse_ini_file(filename: PathBuf) -> Result<IniFile, Error> {
+pub fn parse_ini_file(filename: &PathBuf) -> Result<IniFile, Error> {
     let mut ini = IniFile::default();
 
     let mut current_section_name;

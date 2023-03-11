@@ -29,7 +29,7 @@ pub struct ApplicationFile {
     pub app_type: ApplicationType,
     pub app_generic_name: Option<String>,
     pub app_comment: Option<String>,
-    pub app_icon: Option<PathBuf>,
+    pub app_icon: Option<String>,
     pub app_hidden: Option<bool>,
     pub app_only_show_in: Option<Vec<String>>,
     pub app_not_show_in: Option<Vec<String>>,
@@ -47,6 +47,7 @@ pub struct ApplicationFile {
     pub app_url: Option<String>,
     pub app_prefers_non_default_gpu: Option<bool>,
     pub app_single_main_window: Option<bool>,
+    pub file_address: PathBuf
 }
 
 #[derive(Debug, Clone)]
@@ -59,8 +60,10 @@ pub struct ApplicationFileAction {
 pub fn parse_application_file(filename: PathBuf) -> Result<ApplicationFile, Error> {
     //let file_content = fs::read_to_string(filename).unwrap_or("".to_string());
 
-    let mut file = parse_ini_file(filename)?;
+    let mut file = parse_ini_file(&filename)?;
     let mut app = ApplicationFile::default();
+
+    app.file_address = filename;
 
     let default_desktop_entry: &mut HashMap<String, String> = &mut Default::default();
     let desktop_entry = file
@@ -79,12 +82,13 @@ pub fn parse_application_file(filename: PathBuf) -> Result<ApplicationFile, Erro
     app.app_exec = desktop_entry.remove("Exec");
     app.app_startup_wm_class = desktop_entry.remove("StartupWMClass");
     app.app_url = desktop_entry.remove("URL");
+    app.app_icon = desktop_entry.remove("Icon");
 
     app.app_hidden = desktop_entry.remove("Hidden").map(|s| s == "true");
-    app.app_prefers_non_default_gpu = desktop_entry.remove("Hidden").map(|s| s == "true");
-    app.app_single_main_window = desktop_entry.remove("Hidden").map(|s| s == "true");
-    app.app_terminal = desktop_entry.remove("Hidden").map(|s| s == "true");
-    app.app_dbus_activatable = desktop_entry.remove("Hidden").map(|s| s == "true");
+    app.app_prefers_non_default_gpu = desktop_entry.remove("PrefersNonDefaultGPU").map(|s| s == "true");
+    app.app_single_main_window = desktop_entry.remove("SingleMainWindow").map(|s| s == "true");
+    app.app_terminal = desktop_entry.remove("Terminal").map(|s| s == "true");
+    app.app_dbus_activatable = desktop_entry.remove("DBusActivatable").map(|s| s == "true");
 
     app.app_only_show_in = desktop_entry
         .remove("OnlyShowIn")
@@ -105,24 +109,6 @@ pub fn parse_application_file(filename: PathBuf) -> Result<ApplicationFile, Erro
         .remove("Keywords")
         .map(|s| s.split(":").map(|c| c.into()).collect());
 
-    
-    //app.app_icon = desktop_entry.remove("Icon").and_then(|s| resolve_icon(s));
 
     return Ok(app);
 }
-
-fn resolve_icon(filename: String) -> Option<PathBuf> {
-    !todo!();
-    //The standard dictates that we look in:
-    // - $HOME/.icons
-    // - $XDG_DATA_DIRS/icons
-    // - /usr/share/pixmaps
-
-    // let dirs = std::env::var("XDG_DATA_DIRS")
-    //     .unwrap_or("".to_string())
-    //     .split(":")
-    //     .filter_map(|x| PathBuf::from(x))
-    //     .collect();
-}
-
-fn image_path() {}
