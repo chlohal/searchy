@@ -3,7 +3,14 @@ name = "searchy"
 version = "0.5.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "searchy"
+path = "src/searchy.rs"
+
+[[bin]]
+name = "searchyd"
+path = "src/daemon.rs"
 
 [dependencies]
-skim = "*"
+eframe = "0.21.3"
+tantivy = "0.19.2"

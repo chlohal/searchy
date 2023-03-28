@@ -1,6 +1,6 @@
 use std::{collections::HashMap, io::Error, path::PathBuf, str::FromStr};
 
-use crate::ini_file::parse_ini_file;
+use super::ini_file::parse_ini_file;
 
 #[derive(Default, Debug, Clone)]
 pub enum ApplicationType {

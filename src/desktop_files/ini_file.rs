@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs, io::Error, path::PathBuf};
 
 pub type IniFile = HashMap<String, HashMap<String, String>>;
-
+    
 
 const DEFAULT_SECTION_NAME: &str = "";
 
