@@ -1,12 +1,18 @@
+use actions::{action_database::ActionDatabase, action::Action};
+use desktop_files::desktop_file_search::application_files;
 use interface::window::open_window;
-use query::Searcher;
 
 mod interface;
-mod query;
 mod config;
 mod desktop_files;
+mod actions;
 
 fn main() {
-    let query = Searcher::new().unwrap();
-    open_window(query);
+    let mut actions = ActionDatabase::new();
+
+    for app in application_files() {
+        actions.add(Action::Application(app))
+    }
+
+    open_window(actions);
 }
