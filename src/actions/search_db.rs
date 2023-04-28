@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 
 use crate::desktop_files::application_file::ApplicationFile;
@@ -15,6 +17,6 @@ pub fn score_application(app: &ApplicationFile, query: &String, matcher: &SkimMa
     matcher.fuzzy_match(&app.app_name, query.as_str()).unwrap_or_default()
 }
 
-pub fn score_shell_command(cmd: &String, query: &String, matcher: &SkimMatcherV2) -> i64 {
-    matcher.fuzzy_match(query.as_str(), query.as_str()).unwrap_or_default()
+pub fn score_shell_command(cmd: &PathBuf, query: &String, matcher: &SkimMatcherV2) -> i64 {
+    matcher.fuzzy_match(&cmd.as_os_str().to_string_lossy(), query.as_str()).unwrap_or_default()
 }

@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use druid::widget::{Controller, Scroll, Axis};
-use druid::{Env, Event, EventCtx, LifeCycle, LifeCycleCtx, Widget, Command, Selector, Data};
+use druid::widget::{Axis, Controller, Scroll};
+use druid::{Command, Data, Env, Event, EventCtx, LifeCycle, LifeCycleCtx, Selector, Widget};
 
 use crate::actions::action_database::ActionDatabase;
 
@@ -32,11 +32,11 @@ impl<T: Data, W: Widget<T>> Controller<T, Scroll<T, W>> for ScrollsToBottom<Sear
         env: &Env,
     ) {
         match event {
-            Event::Command(command) => {
-                if command.is(SCROLL_TO_BOTTOM) {
-                    child.scroll_to_on_axis(ctx, Axis::Vertical, child.child_size().height);
-                    
-                }
+            Event::WindowConnected => {
+                ctx.submit_command(SCROLL_TO_BOTTOM);
+            }
+            Event::Command(command) if command.is(SCROLL_TO_BOTTOM) => {
+                child.scroll_to_on_axis(ctx, Axis::Vertical, child.child_size().height);
             }
             _ => {}
         }

@@ -51,6 +51,12 @@ pub struct ApplicationFile {
     pub file_address: PathBuf
 }
 
+impl PartialEq for ApplicationFile {
+    fn eq(&self, other: &Self) -> bool {
+        self.file_address == other.file_address
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ApplicationFileAction {
     name: String,

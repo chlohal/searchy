@@ -1,8 +1,10 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
+use druid::commands::CLOSE_ALL_WINDOWS;
+use druid::keyboard_types::Key;
 use druid::widget::Controller;
-use druid::{Env, Event, EventCtx, LifeCycle, LifeCycleCtx, Widget, Command, Selector};
+use druid::{Env, Event, EventCtx, LifeCycle, LifeCycleCtx, Widget};
 
 use crate::actions::action_database::ActionDatabase;
 
@@ -22,7 +24,9 @@ impl SearchKeypress<SearchingWindow> {
     }
 }
 
-impl<W: Widget<SearchingWindow>> Controller<SearchingWindow, W> for SearchKeypress<SearchingWindow> {
+impl<W: Widget<SearchingWindow>> Controller<SearchingWindow, W>
+    for SearchKeypress<SearchingWindow>
+{
     fn event(
         &mut self,
         child: &mut W,
@@ -32,10 +36,28 @@ impl<W: Widget<SearchingWindow>> Controller<SearchingWindow, W> for SearchKeypre
         env: &Env,
     ) {
         match event {
-            Event::KeyUp(_keys) => {
-                data.results = Arc::new(self.actions.get_action_results(&data.search_query));
-                ctx.submit_command(super::scroll_to_bottom::SCROLL_TO_BOTTOM)
-            }
+            Event::KeyDown(_keys) => match _keys.key {
+                Key::Enter => {
+                    data.run_selected();
+                    ctx.submit_command(CLOSE_ALL_WINDOWS);
+                }
+                Key::ArrowDown => {
+                    if data.selected_index < data.results.len() - 1 {
+                        data.selected_index += 1;
+                    }
+                }
+                Key::ArrowUp => {
+                    if data.selected_index > 0 {
+                        data.selected_index -= 1;
+                    }
+                }
+                _ => {
+                    data.results = Arc::new(self.actions.get_action_results(&data.search_query));
+                    data.selected_index = data.results.len() - 1;
+
+                    ctx.submit_command(super::scroll_to_bottom::SCROLL_TO_BOTTOM);
+                }
+            },
             _ => {}
         }
 
