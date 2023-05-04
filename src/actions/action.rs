@@ -2,6 +2,7 @@ use std::{fmt::Display, path::PathBuf};
 
 use crate::desktop_files::{application_file::ApplicationFile, run_application::run_application};
 
+#[derive(Debug)]
 pub enum Action {
     Application(ApplicationFile),
     ShellCommand(PathBuf),
@@ -35,7 +36,7 @@ impl ToString for Action {
                     + &cmd.file_name().map_or_else(
                         || cmd.to_string_lossy(),
                         |basename| basename.to_string_lossy(),
-                    ) + &cmd.to_string_lossy()
+                    ) + "(" + &cmd.to_string_lossy() + ")"
             }
         }
     }
