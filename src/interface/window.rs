@@ -5,7 +5,7 @@ use iced::widget::{
     column, container, mouse_area, scrollable, text, text_input, vertical_space, Column,
 };
 use iced::{
-    executor, Alignment, Application, Background, Color, Command, Element, Length, Settings, Theme,
+    executor, Alignment, Application, Background, Color, Command, Element, Length, Settings, Theme, window,
 };
 
 use once_cell::sync::Lazy;
@@ -79,16 +79,30 @@ impl Application for SearchingWindow {
             Message::Search(query) => {
                 self.results = get_action_results(&self.actions, &query);
                 self.search_query = query;
+                self.selected = self.results.last().cloned();
+
+                self.scroll_top = 1.0;
+                scrollable::snap_to(
+                    SCROLLABLE_ID.clone(),
+                    scrollable::RelativeOffset::END
+                )
             }
             Message::ClickOption(action) => {
                 self.selected = Some(action);
+                Command::none()
             }
             Message::Scroll(y) => {
                 self.scroll_top = y;
+                Command::none()
             }
-            _ => {}
+            Message::LaunchSelected => {
+                self.run_selected();
+                window::close()
+                
+            }
+            _ => Command::none()
         }
-        Command::none()
+        
     }
 
     fn view(&self) -> Element<Self::Message> {
