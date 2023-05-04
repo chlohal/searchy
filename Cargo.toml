@@ -12,6 +12,5 @@ name = "searchyd"
 path = "src/daemon.rs"
 
 [dependencies]
-druid = "0.8.3"
+iced = "0.9"
 fuzzy-matcher = "0.3.7"
-imgui = "0.10.0"
