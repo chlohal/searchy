@@ -1,7 +1,10 @@
-fn main() {
+mod path_executables;
 
-    // match search_em_up(application_files()) {
-    //     Some(app) => run_application(app).map(|_| ()),//{println!("{:?}", app); Ok(())},
-    //     None => Err(()),
-    // }
+use path_executables::path_executable_search::path_executables;
+
+fn main() {
+    for f in path_executables() {
+        println!("{}", f.to_string_lossy());
+    }
+    
 }

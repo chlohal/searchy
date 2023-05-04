@@ -18,7 +18,9 @@ fn main() {
         actions.add(Action::Application(app));
     }
 
-    for executable in path_executables().take(300) {
+    println!("{}", path_executables().count());
+
+    for executable in path_executables() {
         actions.add(Action::ShellCommand(executable));
     }
 

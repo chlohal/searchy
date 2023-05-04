@@ -1,7 +1,8 @@
 use std::{
-    collections::VecDeque,
+    collections::{hash_map::DefaultHasher, HashSet, VecDeque},
     env,
-    fs::{self, Metadata},
+    fs::{self, symlink_metadata, Metadata},
+    hash::Hash,
     os::unix::prelude::PermissionsExt,
     path::PathBuf,
 };
@@ -12,19 +13,32 @@ pub fn path_executables() -> PathExecutableSearch {
     PathExecutableSearch {
         queue: path_dirs
             .split(":")
-            .filter_map(|path| {
-                if path == "" {
-                    None
-                } else {
-                    Some(PathBuf::from(path))
-                }
+            .filter_map(|directory| {
+                fs::read_dir(resolve_symlink(PathBuf::from(directory)))
+                    .ok()
+                    .map(|files| files.filter_map(|file| file.ok().map(|f| f.path())))
             })
+            .flatten()
             .collect(),
+        previously_generated: HashSet::new(),
     }
 }
 
 pub struct PathExecutableSearch {
     queue: VecDeque<PathBuf>,
+    previously_generated: HashSet<PathBuf>,
+}
+
+fn resolve_symlink(path: PathBuf) -> PathBuf {
+    if let Ok(meta) = fs::symlink_metadata(&path) {
+        if meta.is_symlink() {
+            fs::read_link(&path).unwrap_or(path)
+        } else {
+            path
+        }
+    } else {
+        path
+    }
 }
 
 impl Iterator for PathExecutableSearch {
@@ -32,21 +46,19 @@ impl Iterator for PathExecutableSearch {
 
     fn next(&mut self) -> Option<Self::Item> {
         while !self.queue.is_empty() {
-            let next_path = self.queue.pop_front()?;
+            let next_path = resolve_symlink(self.queue.pop_front()?);
 
-            if let Ok(f_type) = fs::metadata(&next_path) {
+            if let Ok(f_type) = fs::symlink_metadata(&next_path) {
                 //If it's an executable file, yield it
-                if f_type.is_file() && is_executable(&f_type) {
-                    return Some(next_path);
-                }
-                // Otherwise, if it's a directory, add all its children to the queue
-                else if f_type.is_dir() {
-                    if let Ok(dirs) = fs::read_dir(next_path) {
-                        for dir in dirs {
-                            if let Ok(dir_entry) = dir {
-                                self.queue.push_back(dir_entry.path());
-                            }
-                        }
+
+                if f_type.is_symlink() {
+                    if let Ok(pointed_path) = fs::read_link(next_path) {
+                        self.queue.push_back(pointed_path);
+                    }
+                } else if is_executable(&f_type) {
+                    if !self.previously_generated.contains(&next_path) {
+                        self.previously_generated.insert(next_path.clone());
+                        return Some(next_path);
                     }
                 }
             }
