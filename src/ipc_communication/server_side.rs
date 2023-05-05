@@ -6,7 +6,6 @@ pub fn listen_socket() -> Result<UnixListener, std::io::Error> {
     let socket_path = get_socket_file_address();
 
     if std::fs::metadata(&socket_path).is_ok() {
-        println!("A socket is already present. Deleting...");
         std::fs::remove_file(&socket_path)?;
     }
 

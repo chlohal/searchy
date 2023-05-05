@@ -4,7 +4,7 @@ use iced::widget::{
     column, container, mouse_area, scrollable, text, text_input, vertical_space, Column,
 };
 use iced::{
-    executor, Alignment, Application, Background, Color, Command, Element, Length, Settings, Theme, window,
+    executor, Alignment, Application, Background, Color, Command, Element, Length, Settings, Theme, window
 };
 
 use once_cell::sync::Lazy;
@@ -20,6 +20,7 @@ static SEARCHBOX_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 pub fn open_window(actions: Arc<ActionDatabase>) -> Result<(), iced::Error> {
     let mut settings = Settings::with_flags(actions);
     settings.window.decorations = false;
+    settings.id = Some("searchy".to_string());
     SearchingWindow::run(settings)
 }
 

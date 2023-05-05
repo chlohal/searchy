@@ -5,7 +5,7 @@ use std::{io::Read, os::unix::net::UnixStream, process::exit, sync::Arc};
 use actions::{action::Action, action_database::ActionDatabase};
 use desktop_files::desktop_file_search::application_files;
 use interface::window::open_window;
-use ipc_communication::server_side::listen_socket;
+use ipc_communication::{server_side::listen_socket, message::IpcMessage};
 use path_executables::path_executable_search::path_executables;
 
 mod actions;
@@ -49,17 +49,27 @@ fn handle_stream(mut unix_stream: UnixStream, actions: &Arc<ActionDatabase>) {
 
     let message = match String::from_utf8(buf) {
         Ok(it) => it,
-        Err(_) => return (),
+        Err(err) => {
+            eprintln!("{}", err.to_string());
+            return;
+        }
     };
 
-    match message.as_str() {
-        "show-window" => {
+    let ipc_message: IpcMessage = match message.try_into() {
+        Ok(it) => it,
+        Err(err) => {
+            eprintln!("{}", err.to_string());
+            return;
+        },
+    };
+
+    match ipc_message {
+        IpcMessage::OpenWindow => {
             match open_window(actions.clone()) {
                 Ok(_) => {}
                 Err(err) => eprintln!("{}", err.to_string()),
             };
             exit(0);
         }
-        _ => {}
     }
 }
