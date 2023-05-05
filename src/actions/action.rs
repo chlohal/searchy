@@ -1,6 +1,8 @@
-use std::{fmt::Display, path::PathBuf};
+use std::path::PathBuf;
 
 use crate::desktop_files::{application_file::ApplicationFile, run_application::run_application};
+
+use crate::path_executables::run_shell_command::run_shell_command;
 
 #[derive(Debug)]
 pub enum Action {
@@ -12,7 +14,7 @@ impl Action {
     pub fn run(&self) -> Result<(), String> {
         match self {
             Action::Application(a) => run_application(a).map(|_| ()),
-            Action::ShellCommand(_) => todo!(),
+            Action::ShellCommand(cmd) => run_shell_command(cmd).map(|_| ()),
         }
     }
 }

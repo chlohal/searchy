@@ -1,8 +1,7 @@
 use std::{
-    collections::{hash_map::DefaultHasher, HashSet, VecDeque},
+    collections::{HashSet, VecDeque},
     env,
-    fs::{self, symlink_metadata, Metadata},
-    hash::Hash,
+    fs::{self, Metadata},
     os::unix::prelude::PermissionsExt,
     path::PathBuf,
 };

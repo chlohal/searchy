@@ -1,4 +1,3 @@
-use iced::futures::future::lazy;
 use iced::widget::container::Appearance;
 use iced::widget::scrollable::Properties;
 use iced::widget::{
@@ -16,10 +15,11 @@ use crate::actions::{action::Action, action_database::ActionDatabase};
 static PAGE_SIZE: usize = 20;
 static ENTRY_HEIGHT: f32 = 50.0;
 static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
+static SEARCHBOX_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
-pub fn open_window(actions: ActionDatabase) -> Result<(), iced::Error> {
-    let mut settings = Settings::default();
-    settings.flags = actions;
+pub fn open_window(actions: Arc<ActionDatabase>) -> Result<(), iced::Error> {
+    let mut settings = Settings::with_flags(actions);
+    settings.window.decorations = false;
     SearchingWindow::run(settings)
 }
 
@@ -31,11 +31,10 @@ fn get_action_results(actions: &ActionDatabase, query: &String) -> Vec<Arc<Actio
         .collect()
 }
 
-#[derive(Default)]
 pub struct SearchingWindow {
     pub search_query: String,
     pub selected: Option<Arc<Action>>,
-    pub actions: ActionDatabase,
+    pub actions: Arc<ActionDatabase>,
     pub results: Vec<Arc<Action>>,
     pub scroll_top: f32,
 }
@@ -53,7 +52,7 @@ pub enum Message {
 impl Application for SearchingWindow {
     type Message = Message;
     type Executor = executor::Default;
-    type Flags = ActionDatabase;
+    type Flags = Arc<ActionDatabase>;
     type Theme = Theme;
 
     fn new(init_data: Self::Flags) -> (SearchingWindow, iced::Command<Message>) {
@@ -64,9 +63,15 @@ impl Application for SearchingWindow {
                 selected: None,
                 actions: init_data,
                 results,
-                scroll_top: 0.0,
+                scroll_top: 1.0,
             },
-            Command::none(),
+            Command::batch(vec![
+                scrollable::snap_to(
+                    SCROLLABLE_ID.clone(),
+                    scrollable::RelativeOffset::END
+                ),
+                text_input::focus(SEARCHBOX_ID.clone())
+            ]),
         )
     }
 
@@ -109,7 +114,8 @@ impl Application for SearchingWindow {
         let searchbox = text_input("Search...", &self.search_query)
             .on_input(|content| Message::Search(content))
             .on_submit(Message::LaunchSelected)
-            .width(Length::Fill);
+            .width(Length::Fill)
+            .id(SEARCHBOX_ID.clone());
 
         let scrollbox = scrollable_subset_from(&self.results, self.scroll_top, &self.selected)
             .height(Length::Fill)

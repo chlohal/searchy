@@ -1,14 +1,17 @@
 #![feature(option_result_contains)]
 
-use actions::{action_database::ActionDatabase, action::Action};
-use path_executables::path_executable_search::path_executables;
+use std::{io::Read, os::unix::net::UnixStream, process::exit, sync::Arc};
+
+use actions::{action::Action, action_database::ActionDatabase};
 use desktop_files::desktop_file_search::application_files;
 use interface::window::open_window;
+use ipc_communication::server_side::listen_socket;
+use path_executables::path_executable_search::path_executables;
 
-mod interface;
-mod config;
-mod desktop_files;
 mod actions;
+mod desktop_files;
+mod interface;
+mod ipc_communication;
 mod path_executables;
 
 fn main() {
@@ -18,11 +21,45 @@ fn main() {
         actions.add(Action::Application(app));
     }
 
-    println!("{}", path_executables().count());
-
     for executable in path_executables() {
         actions.add(Action::ShellCommand(executable));
     }
 
-    let window = open_window(actions);
+    let actions_arc = Arc::new(actions);
+
+    match listen_socket() {
+        Ok(listener) => loop {
+            if let Ok((unix_stream, _socket_address)) = listener.accept() {
+                handle_stream(unix_stream, &actions_arc);
+            }
+        },
+        Err(err) => eprintln!("{:?}", err),
+    }
+}
+
+fn handle_stream(mut unix_stream: UnixStream, actions: &Arc<ActionDatabase>) {
+    let mut buf = Vec::<u8>::new();
+    match unix_stream.read_to_end(&mut buf) {
+        Ok(it) => it,
+        Err(err) => {
+            eprintln!("{}", err.to_string());
+            return;
+        }
+    };
+
+    let message = match String::from_utf8(buf) {
+        Ok(it) => it,
+        Err(_) => return (),
+    };
+
+    match message.as_str() {
+        "show-window" => {
+            match open_window(actions.clone()) {
+                Ok(_) => {}
+                Err(err) => eprintln!("{}", err.to_string()),
+            };
+            exit(0);
+        }
+        _ => {}
+    }
 }
