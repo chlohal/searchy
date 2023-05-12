@@ -24,7 +24,7 @@ impl ActionDatabase {
         self.actions.iter()
     }
 
-    pub fn get_action_results(&self, query: &String) -> Vec<Arc<Action>> {
+    pub fn get_action_results(&self, query: &str) -> Vec<Arc<Action>> {
         let matcher = SkimMatcherV2::default();
 
         let mut results = self.actions.clone();
@@ -35,7 +35,7 @@ impl ActionDatabase {
             a_score.cmp(&b_score)
         });
 
-        return results
+        results
     }
 }
 

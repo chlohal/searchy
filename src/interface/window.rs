@@ -1,6 +1,6 @@
-use iced::futures::stream::BoxStream;
+
 use iced::keyboard::KeyCode;
-use iced::subscription::{self, Recipe};
+
 use iced::widget::container::Appearance;
 use iced::widget::scrollable::Properties;
 use iced::widget::{
@@ -8,19 +8,18 @@ use iced::widget::{
 };
 use iced::{
     executor, window, Alignment, Application, Background, Color, Command, Element, Length,
-    Settings, Subscription, Theme,
+    Settings, Theme,
 };
 
 use iced_native::keyboard::{Event, Modifiers};
 use once_cell::sync::Lazy;
-use std::hash::Hasher;
 use std::sync::Arc;
 
 use crate::actions::{action::Action, action_database::ActionDatabase};
 use crate::ipc_communication::message::IpcMessage;
 
-use super::keyboard_capture::{self, keyboard_capture};
-use super::unix_stream_sub::{self, unix_stream_subscription};
+use super::keyboard_capture::{keyboard_capture};
+use super::unix_stream_sub::{unix_stream_subscription};
 
 static PAGE_SIZE: usize = 20;
 static ENTRY_HEIGHT: f32 = 50.0;
@@ -37,12 +36,9 @@ pub fn open_window(actions: Arc<ActionDatabase>) -> Result<(), iced::Error> {
     SearchingWindow::run(settings)
 }
 
-fn get_action_results(actions: &ActionDatabase, query: &String) -> Vec<Arc<Action>> {
+fn get_action_results(actions: &ActionDatabase, query: &str) -> Vec<Arc<Action>> {
     actions
-        .get_action_results(query)
-        .iter()
-        .map(|x| x.clone())
-        .collect()
+        .get_action_results(query).to_vec()
 }
 
 pub struct SearchingWindow {
@@ -139,7 +135,7 @@ impl Application for SearchingWindow {
 
     fn view(&self) -> Element<Self::Message> {
         let searchbox = text_input("Search...", &self.search_query)
-            .on_input(|content| Message::Search(content))
+            .on_input(Message::Search)
             .on_submit(Message::LaunchSelected)
             .width(Length::Fill)
             .id(SEARCHBOX_ID.clone());
@@ -239,9 +235,9 @@ fn selected_entry(_: &Theme) -> Appearance {
 
 impl SearchingWindow {
     pub fn get_selected(&self) -> Option<Arc<Action>> {
-        return self.selected.clone();
+        self.selected.clone()
     }
-    pub fn run_selected(&self) -> () {
+    pub fn run_selected(&self) {
         let Some(to_run) = &self.get_selected() else { return };
 
         match to_run.run() {

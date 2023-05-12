@@ -67,9 +67,7 @@ pub fn parse_application_file(filename: PathBuf) -> Result<ApplicationFile, Erro
     //let file_content = fs::read_to_string(filename).unwrap_or("".to_string());
 
     let mut file = parse_ini_file(&filename)?;
-    let mut app = ApplicationFile::default();
-
-    app.file_address = filename;
+    let mut app = ApplicationFile { file_address: filename, ..Default::default() };
 
     let default_desktop_entry: &mut HashMap<String, String> = &mut Default::default();
     let desktop_entry = file
@@ -98,23 +96,23 @@ pub fn parse_application_file(filename: PathBuf) -> Result<ApplicationFile, Erro
 
     app.app_only_show_in = desktop_entry
         .remove("OnlyShowIn")
-        .map(|s| s.split(":").map(|c| c.into()).collect());
+        .map(|s| s.split(':').map(|c| c.into()).collect());
     app.app_not_show_in = desktop_entry
         .remove("NotShowIn")
-        .map(|s| s.split(":").map(|c| c.into()).collect());
+        .map(|s| s.split(':').map(|c| c.into()).collect());
     app.app_mime_types = desktop_entry
         .remove("MimeType")
-        .map(|s| s.split(":").map(|c| c.into()).collect());
+        .map(|s| s.split(':').map(|c| c.into()).collect());
     app.app_categories = desktop_entry
         .remove("Categories")
-        .map(|s| s.split(":").map(|c| c.into()).collect());
+        .map(|s| s.split(':').map(|c| c.into()).collect());
     app.app_implements = desktop_entry
         .remove("Implements")
-        .map(|s| s.split(":").map(|c| c.into()).collect());
+        .map(|s| s.split(':').map(|c| c.into()).collect());
     app.app_keywords = desktop_entry
         .remove("Keywords")
-        .map(|s| s.split(":").map(|c| c.into()).collect());
+        .map(|s| s.split(':').map(|c| c.into()).collect());
 
 
-    return Ok(app);
+    Ok(app)
 }

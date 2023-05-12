@@ -6,7 +6,7 @@ use crate::path_executables::run_shell_command::run_shell_command;
 
 #[derive(Debug)]
 pub enum Action {
-    Application(ApplicationFile),
+    Application(Box<ApplicationFile>),
     ShellCommand(PathBuf),
 }
 

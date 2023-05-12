@@ -1,6 +1,6 @@
 mod ipc_communication;
 
-use ipc_communication::{client_side::send_socket, message::IpcMessage};
+use ipc_communication::{client_side::send_socket};
 use std::env::args;
 
 fn main() {
@@ -11,7 +11,7 @@ fn main() {
                 has_sent += 1;
             }
             Err(err) => {
-                eprintln!("{}", err.to_string());
+                eprintln!("{}", err);
             }
         }
     }

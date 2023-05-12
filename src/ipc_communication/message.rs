@@ -7,13 +7,13 @@ pub enum IpcMessage {
     Refresh
 }
 
-const OPEN_WINDOW: &'static str = "open-window";
-const CLOSE_PROGRAM: &'static str = "close-program";
-const REFRESH: &'static str = "refresh";
+const OPEN_WINDOW: &str = "open-window";
+const CLOSE_PROGRAM: &str = "close-program";
+const REFRESH: &str = "refresh";
 
-impl Into<&str> for IpcMessage {
-    fn into(self) -> &'static str {
-        match self {
+impl From<IpcMessage> for &str {
+    fn from(val: IpcMessage) -> Self {
+        match val {
             IpcMessage::OpenWindow => OPEN_WINDOW,
             IpcMessage::CloseProgram => CLOSE_PROGRAM,
             IpcMessage::Refresh => REFRESH,
@@ -23,7 +23,7 @@ impl Into<&str> for IpcMessage {
 
 impl Display for IpcMessage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(Into::<&str>::into(*self)).into()
+        f.write_str(Into::<&str>::into(*self))
     }
 }
 

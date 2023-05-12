@@ -50,7 +50,7 @@ fn stream_to_ipc_message(mut unix_stream: UnixStream) -> Result<IpcMessage, Stri
     match unix_stream.read_to_end(&mut buf) {
         Ok(it) => it,
         Err(err) => {
-            eprintln!("{}", err.to_string());
+            eprintln!("{}", err);
             return Err(err.to_string());
         }
     };
@@ -58,7 +58,7 @@ fn stream_to_ipc_message(mut unix_stream: UnixStream) -> Result<IpcMessage, Stri
     let message = match String::from_utf8(buf) {
         Ok(it) => it,
         Err(err) => {
-            eprintln!("{}", err.to_string());
+            eprintln!("{}", err);
             return Err(err.to_string());
         }
     };
@@ -66,7 +66,7 @@ fn stream_to_ipc_message(mut unix_stream: UnixStream) -> Result<IpcMessage, Stri
     let ipc_message: IpcMessage = match message.try_into() {
         Ok(it) => it,
         Err(err) => {
-            eprintln!("{}", err.to_string());
+            eprintln!("{}", err);
             return Err(err);
         }
     };

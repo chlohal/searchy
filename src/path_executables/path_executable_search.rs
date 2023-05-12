@@ -11,7 +11,7 @@ pub fn path_executables() -> PathExecutableSearch {
 
     PathExecutableSearch {
         queue: path_dirs
-            .split(":")
+            .split(':')
             .filter_map(|directory| {
                 fs::read_dir(resolve_symlink(PathBuf::from(directory)))
                     .ok()
@@ -54,11 +54,9 @@ impl Iterator for PathExecutableSearch {
                     if let Ok(pointed_path) = fs::read_link(next_path) {
                         self.queue.push_back(pointed_path);
                     }
-                } else if is_executable(&f_type) {
-                    if !self.previously_generated.contains(&next_path) {
-                        self.previously_generated.insert(next_path.clone());
-                        return Some(next_path);
-                    }
+                } else if is_executable(&f_type) && !self.previously_generated.contains(&next_path) {
+                    self.previously_generated.insert(next_path.clone());
+                    return Some(next_path);
                 }
             }
         }

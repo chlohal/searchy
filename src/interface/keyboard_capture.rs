@@ -1,10 +1,12 @@
 //! A container for capturing mouse events.
 
-use std::marker::PhantomData;
+use std::{marker::PhantomData};
 
 use iced::{event, keyboard, Element, Event};
 
-use iced_native::{widget::Tree, Length, Size, Widget};
+use iced_native::{Length, Size, Widget};
+
+
 
 pub fn keyboard_capture<'a, Message, Renderer>() -> KeyboardCapture<'a, Message, Renderer>
 where
@@ -12,6 +14,7 @@ where
 {
     KeyboardCapture::new()
 }
+
 
 pub struct KeyboardCapture<'a, Message, Renderer> {
     on_key_event: Option<Box<dyn Fn(keyboard::Event) -> Option<Message> + 'a>>,
@@ -25,6 +28,12 @@ impl<'a, Message, Renderer> KeyboardCapture<'a, Message, Renderer> {
     }
 
     pub fn new() -> Self {
+        KeyboardCapture::default()
+    }
+}
+
+impl<'a, Message, Renderer> Default for KeyboardCapture<'a, Message, Renderer> {
+    fn default() -> Self {
         KeyboardCapture {
             on_key_event: None,
             _p: PhantomData,
@@ -75,13 +84,13 @@ where
 
     fn draw(
         &self,
-        state: &iced_native::widget::Tree,
-        renderer: &mut Renderer,
-        theme: &<Renderer as iced_native::Renderer>::Theme,
-        style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        cursor_position: iced_native::Point,
-        viewport: &iced_native::Rectangle,
+        _state: &iced_native::widget::Tree,
+        _renderer: &mut Renderer,
+        _theme: &<Renderer as iced_native::Renderer>::Theme,
+        _style: &iced_native::renderer::Style,
+        _layout: iced_native::Layout<'_>,
+        _cursor_position: iced_native::Point,
+        _viewport: &iced_native::Rectangle,
     ) {
     }
 }

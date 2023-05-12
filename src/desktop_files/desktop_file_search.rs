@@ -7,9 +7,9 @@ pub fn application_files() -> ApplicationFileSearch {
 
     ApplicationFileSearch {
         queue: data_dirs
-            .split(":")
+            .split(':')
             .filter_map(|path| {
-                if path == "" {
+                if path.is_empty() {
                     None
                 } else {
                     Some(PathBuf::from(path))
@@ -42,10 +42,8 @@ impl Iterator for ApplicationFileSearch {
             if let Ok(f_type) = fs::metadata(&next_path) {
                 if f_type.is_dir() {
                     if let Ok(dirs) = fs::read_dir(next_path) {
-                        for dir in dirs {
-                            if let Ok(dir_entry) = dir {
-                                self.queue.push_back(dir_entry.path());
-                            }
+                        for entry in dirs.flatten() {
+                            self.queue.push_back(entry.path());
                         }
                     }
                 }

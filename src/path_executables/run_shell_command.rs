@@ -1,6 +1,6 @@
-use std::{path::PathBuf, ffi::OsString, process::{Command, Stdio}};
+use std::{path::Path, ffi::OsString, process::{Command, Stdio}};
 
-pub fn run_shell_command(command_name: &PathBuf) -> Result<String, String> {
+pub fn run_shell_command(command_name: &Path) -> Result<String, String> {
 
     let mut bash_command = command_name.as_os_str().to_owned();
     bash_command.extend(vec![OsString::from("; $SHELL")]);
@@ -21,7 +21,7 @@ pub fn run_shell_command(command_name: &PathBuf) -> Result<String, String> {
 
     //get child's ID, which has the side effect of waiting for it to be fully
     //loaded by the system.
-    let pid = child.id();
+    let _pid = child.id();
 
     Ok("".into())
 }

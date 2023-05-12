@@ -13,7 +13,7 @@ pub fn parse_ini_file(filename: &PathBuf) -> Result<IniFile, Error> {
 
     //Insert the default section to start
     ini.insert(DEFAULT_SECTION_NAME.into(), HashMap::default());
-    let mut current_section = ini.get_mut(DEFAULT_SECTION_NAME.into()).unwrap();
+    let mut current_section = ini.get_mut(DEFAULT_SECTION_NAME).unwrap();
 
 
     for line in fs::read_to_string(filename)?.split('\n') {
@@ -48,5 +48,5 @@ pub fn parse_ini_file(filename: &PathBuf) -> Result<IniFile, Error> {
         }
     }
 
-    return Ok(ini);
+    Ok(ini)
 }
