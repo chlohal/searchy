@@ -81,10 +81,7 @@ impl Application for SearchingWindow {
                 results,
                 scroll_top: 1.0,
             },
-            Command::batch(vec![
-                scrollable::snap_to(SCROLLABLE_ID.clone(), scrollable::RelativeOffset::END),
-                text_input::focus(SEARCHBOX_ID.clone()),
-            ]),
+            Command::none(),
         )
     }
 
@@ -97,8 +94,6 @@ impl Application for SearchingWindow {
     }
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Message> {
-        eprintln!("msg! {:?}", message);
-
         match message {
             Message::Search(query) => {
                 self.results = get_action_results(&self.actions, &query);
@@ -118,12 +113,19 @@ impl Application for SearchingWindow {
             }
             Message::LaunchSelected => {
                 self.run_selected();
-
-                self.reset_state();
                 window::change_mode(window::Mode::Hidden)
             }
             Message::Ipc(ipc_message) => match ipc_message {
-                IpcMessage::OpenWindow => window::change_mode(window::Mode::Windowed),
+                IpcMessage::OpenWindow => {
+                    self.reset_state();
+
+                    Command::batch(vec![
+                        window::gain_focus(),
+                        scrollable::snap_to(SCROLLABLE_ID.clone(), scrollable::RelativeOffset::END),
+                        text_input::focus(SEARCHBOX_ID.clone()),
+                        window::change_mode(window::Mode::Windowed),
+                    ])
+                }
                 IpcMessage::CloseProgram => window::close(),
                 IpcMessage::Refresh => Command::none(),
             },
@@ -166,6 +168,8 @@ fn handle_key_event(e: Event) -> Option<Message> {
             key_code: KeyCode::Escape,
             ..
         } => Some(Message::HideWindow),
+        Event::KeyPressed { key_code: KeyCode::Down, .. } => Some(Message::SelectNext),
+        Event::KeyPressed { key_code: KeyCode::Up, .. } => Some(Message::SelectPrevious),
         _ => None,
     }
 }
