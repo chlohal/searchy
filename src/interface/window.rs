@@ -1,16 +1,22 @@
+use iced::futures::stream::BoxStream;
+use iced::subscription::{Recipe, self};
 use iced::widget::container::Appearance;
 use iced::widget::scrollable::Properties;
 use iced::widget::{
     column, container, mouse_area, scrollable, text, text_input, vertical_space, Column,
 };
 use iced::{
-    executor, Alignment, Application, Background, Color, Command, Element, Length, Settings, Theme, window
+    executor, Alignment, Application, Background, Color, Command, Element, Length, Settings, Theme, window, Subscription, Event
 };
 
 use once_cell::sync::Lazy;
+use std::hash::Hasher;
 use std::sync::Arc;
 
 use crate::actions::{action::Action, action_database::ActionDatabase};
+use crate::ipc_communication::message::IpcMessage;
+
+use super::unix_stream_sub::{self, unix_stream_subscription};
 
 static PAGE_SIZE: usize = 20;
 static ENTRY_HEIGHT: f32 = 50.0;
@@ -20,6 +26,8 @@ static SEARCHBOX_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 pub fn open_window(actions: Arc<ActionDatabase>) -> Result<(), iced::Error> {
     let mut settings = Settings::with_flags(actions);
     settings.window.decorations = false;
+    settings.window.always_on_top = true;
+    settings.window.visible = false;
     settings.id = Some("searchy".to_string());
     SearchingWindow::run(settings)
 }
@@ -48,6 +56,7 @@ pub enum Message {
     SelectPrevious,
     Search(String),
     Scroll(f32),
+    Ipc(IpcMessage)
 }
 
 impl Application for SearchingWindow {
@@ -80,6 +89,10 @@ impl Application for SearchingWindow {
         "Searchy".to_string()
     }
 
+    fn subscription(&self) -> iced::Subscription<Self::Message> {
+        unix_stream_subscription()
+    }
+
     fn update(&mut self, message: Self::Message) -> iced::Command<Message> {
         match message {
             Message::Search(query) => {
@@ -103,8 +116,14 @@ impl Application for SearchingWindow {
             }
             Message::LaunchSelected => {
                 self.run_selected();
-                window::close()
-                
+                window::change_mode(window::Mode::Hidden)
+            },
+            Message::Ipc(ipc_message) => {
+                match ipc_message {
+                    IpcMessage::OpenWindow => window::change_mode(window::Mode::Windowed),
+                    IpcMessage::CloseProgram => window::close(),
+                    IpcMessage::Refresh => Command::none(),
+                }
             }
             _ => Command::none()
         }
