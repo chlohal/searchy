@@ -28,6 +28,7 @@ pub fn open_window(actions: Arc<ActionDatabase>) -> Result<(), iced::Error> {
     settings.window.decorations = false;
     settings.window.always_on_top = true;
     settings.window.visible = false;
+    settings.exit_on_close_request = false;
     settings.id = Some("searchy".to_string());
     SearchingWindow::run(settings)
 }
@@ -94,6 +95,8 @@ impl Application for SearchingWindow {
     }
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Message> {
+        eprintln!("msg! {:?}", message);
+
         match message {
             Message::Search(query) => {
                 self.results = get_action_results(&self.actions, &query);
@@ -116,6 +119,8 @@ impl Application for SearchingWindow {
             }
             Message::LaunchSelected => {
                 self.run_selected();
+                
+                self.reset_state();
                 window::change_mode(window::Mode::Hidden)
             },
             Message::Ipc(ipc_message) => {
@@ -218,5 +223,12 @@ impl SearchingWindow {
                 eprintln!("Error launching: {}", e)
             }
         }
+    }
+
+    pub fn reset_state(&mut self) {
+        self.search_query = "".to_string();
+        self.results = get_action_results(&self.actions, &self.search_query);
+        self.selected = None;
+        self.scroll_top = 1.0;
     }
 }

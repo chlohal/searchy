@@ -1,86 +1,51 @@
 use std::{
-    collections::VecDeque,
-    hash::Hasher,
-    io::{Read, self},
-    os::unix::net::{UnixListener, UnixStream},
-    pin::Pin,
-    sync::{Arc, Mutex},
-    task::Poll,
-    thread,
+    future::Future,
+    io::Read,
+    os::unix::net::{UnixListener, UnixStream}, thread,
 };
 
 use iced::{
-    futures::{
-        stream::{BoxStream, LocalBoxStream},
-        Stream,
-    },
-    subscription::{self, Recipe},
-    Event, Subscription,
+    futures::{channel::oneshot::Receiver, TryFutureExt},
+    subscription, Subscription,
+};
+use iced_native::futures::{
+    channel::mpsc::{channel, Sender},
+    executor::block_on,
+    future, SinkExt,
 };
 
 use crate::ipc_communication::{message::IpcMessage, server_side::listen_socket};
 
 use super::window::Message;
 
-const UNIX_STREAM_IDENTIFIER: &str = "UNIX_STREAM";
-
-pub enum State {
-    Listening(UnixListener),
-    Streaming(UnixListener, UnixStream),
-    Done,
+pub fn unix_stream_subscription() -> Subscription<Message> {
+    subscription::run(stream_builder)
 }
 
-pub fn unix_stream_subscription() -> Subscription<Message> {
+fn stream_builder() -> iced_native::futures::channel::mpsc::Receiver<Message> {
     if let Ok(listener) = listen_socket() {
-        subscription::unfold(
-            UNIX_STREAM_IDENTIFIER,
-            State::Listening(listener),
-            move |state| handle_stream(state),
-        )
+        let (send, recieve) = channel::<Message>(10);
+        accept_into_queue(listener, send);
+
+        recieve
     } else {
-        subscription::unfold(UNIX_STREAM_IDENTIFIER, State::Done, move |_| async {
-            (Message::Ipc(IpcMessage::CloseProgram), State::Done)
-        })
+        channel::<Message>(1).1
     }
 }
 
-async fn handle_stream(state: State) -> (Message, State) {
-    match state {
-        State::Listening(listener) => {
-            listener
-                .set_nonblocking(true)
-                .expect("Couldn't set socket non-blocking");
-
-            match listener.accept() {
-                Ok((stream, _)) => (
-                    Message::Ipc(IpcMessage::Refresh),
-                    State::Streaming(listener, stream),
-                ),
+fn accept_into_queue(listener: UnixListener, mut message_queue: Sender<Message>) {
+    thread::spawn(move || {
+        for stream in listener.incoming() {
+            match stream_to_ipc_message(stream.unwrap()) {
+                Ok(ipc) => {
+                    block_on(message_queue.send(Message::Ipc(ipc))).unwrap();
+                }
                 Err(e) => {
-                    match e.kind() {
-                        io::ErrorKind::WouldBlock => {}
-                        _ => eprintln!("{}", e.to_string()),
-                    };
-
-                    return (
-                        Message::Ipc(IpcMessage::Refresh),
-                        State::Listening(listener),
-                    );
+                    eprintln!("{}", e);
                 }
             }
         }
-        State::Streaming(listener, stream) => {
-            if let Ok(m) = stream_to_ipc_message(stream) {
-                return (Message::Ipc(m), State::Listening(listener));
-            } else {
-                return (
-                    Message::Ipc(IpcMessage::Refresh),
-                    State::Listening(listener),
-                );
-            }
-        }
-        State::Done => todo!(),
-    }
+    });
 }
 
 fn stream_to_ipc_message(mut unix_stream: UnixStream) -> Result<IpcMessage, String> {

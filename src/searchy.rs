@@ -1,6 +1,6 @@
 mod ipc_communication;
 
-use ipc_communication::client_side::send_socket;
+use ipc_communication::{client_side::send_socket, message::IpcMessage};
 use std::env::args;
 
 fn main() {
@@ -15,6 +15,8 @@ fn main() {
             }
         }
     }
+
+    
 
     if has_sent == 0 {
         eprintln!(

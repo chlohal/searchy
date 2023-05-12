@@ -1870,6 +1870,8 @@ version = "0.5.0"
 dependencies = [
  "fuzzy-matcher",
  "iced",
+ "iced_native",
+ "iced_wgpu",
  "once_cell",
 ]
 

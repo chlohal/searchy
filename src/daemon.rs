@@ -27,5 +27,5 @@ fn main() {
 
     let actions_arc = Arc::new(actions);
 
-    open_window(actions_arc.clone());
+    open_window(actions_arc.clone()).unwrap();
 }
