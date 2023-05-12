@@ -1,17 +1,14 @@
 use std::{
-    future::Future,
     io::Read,
     os::unix::net::{UnixListener, UnixStream}, thread,
 };
 
 use iced::{
-    futures::{channel::oneshot::Receiver, TryFutureExt},
     subscription, Subscription,
 };
 use iced_native::futures::{
     channel::mpsc::{channel, Sender},
-    executor::block_on,
-    future, SinkExt,
+    executor::block_on, SinkExt,
 };
 
 use crate::ipc_communication::{message::IpcMessage, server_side::listen_socket};

@@ -1,14 +1,17 @@
 use iced::futures::stream::BoxStream;
-use iced::subscription::{Recipe, self};
+use iced::keyboard::KeyCode;
+use iced::subscription::{self, Recipe};
 use iced::widget::container::Appearance;
 use iced::widget::scrollable::Properties;
 use iced::widget::{
     column, container, mouse_area, scrollable, text, text_input, vertical_space, Column,
 };
 use iced::{
-    executor, Alignment, Application, Background, Color, Command, Element, Length, Settings, Theme, window, Subscription, Event
+    executor, window, Alignment, Application, Background, Color, Command, Element, Length,
+    Settings, Subscription, Theme,
 };
 
+use iced_native::keyboard::{Event, Modifiers};
 use once_cell::sync::Lazy;
 use std::hash::Hasher;
 use std::sync::Arc;
@@ -16,6 +19,7 @@ use std::sync::Arc;
 use crate::actions::{action::Action, action_database::ActionDatabase};
 use crate::ipc_communication::message::IpcMessage;
 
+use super::keyboard_capture::{self, keyboard_capture};
 use super::unix_stream_sub::{self, unix_stream_subscription};
 
 static PAGE_SIZE: usize = 20;
@@ -57,7 +61,8 @@ pub enum Message {
     SelectPrevious,
     Search(String),
     Scroll(f32),
-    Ipc(IpcMessage)
+    Ipc(IpcMessage),
+    HideWindow,
 }
 
 impl Application for SearchingWindow {
@@ -77,11 +82,8 @@ impl Application for SearchingWindow {
                 scroll_top: 1.0,
             },
             Command::batch(vec![
-                scrollable::snap_to(
-                    SCROLLABLE_ID.clone(),
-                    scrollable::RelativeOffset::END
-                ),
-                text_input::focus(SEARCHBOX_ID.clone())
+                scrollable::snap_to(SCROLLABLE_ID.clone(), scrollable::RelativeOffset::END),
+                text_input::focus(SEARCHBOX_ID.clone()),
             ]),
         )
     }
@@ -104,10 +106,7 @@ impl Application for SearchingWindow {
                 self.selected = self.results.last().cloned();
 
                 self.scroll_top = 1.0;
-                scrollable::snap_to(
-                    SCROLLABLE_ID.clone(),
-                    scrollable::RelativeOffset::END
-                )
+                scrollable::snap_to(SCROLLABLE_ID.clone(), scrollable::RelativeOffset::END)
             }
             Message::ClickOption(action) => {
                 self.selected = Some(action);
@@ -119,20 +118,21 @@ impl Application for SearchingWindow {
             }
             Message::LaunchSelected => {
                 self.run_selected();
-                
+
                 self.reset_state();
                 window::change_mode(window::Mode::Hidden)
-            },
-            Message::Ipc(ipc_message) => {
-                match ipc_message {
-                    IpcMessage::OpenWindow => window::change_mode(window::Mode::Windowed),
-                    IpcMessage::CloseProgram => window::close(),
-                    IpcMessage::Refresh => Command::none(),
-                }
             }
-            _ => Command::none()
+            Message::Ipc(ipc_message) => match ipc_message {
+                IpcMessage::OpenWindow => window::change_mode(window::Mode::Windowed),
+                IpcMessage::CloseProgram => window::close(),
+                IpcMessage::Refresh => Command::none(),
+            },
+            Message::HideWindow => {
+                self.reset_state();
+                window::change_mode(window::Mode::Hidden)
+            }
+            _ => Command::none(),
         }
-        
     }
 
     fn view(&self) -> Element<Self::Message> {
@@ -148,9 +148,25 @@ impl Application for SearchingWindow {
             .on_scroll(|offset| Message::Scroll(offset.y))
             .id(SCROLLABLE_ID.clone());
 
-        column!(scrollbox, searchbox)
-            .align_items(Alignment::Center)
-            .into()
+        let key_eventer = keyboard_capture().on_key_event(handle_key_event);
+
+        let page = column!(scrollbox, searchbox, key_eventer).align_items(Alignment::Center);
+
+        page.into()
+    }
+}
+
+fn handle_key_event(e: Event) -> Option<Message> {
+    match e {
+        Event::KeyPressed {
+            key_code: KeyCode::F4,
+            modifiers: Modifiers::ALT,
+        } => Some(Message::HideWindow),
+        Event::KeyPressed {
+            key_code: KeyCode::Escape,
+            ..
+        } => Some(Message::HideWindow),
+        _ => None,
     }
 }
 
@@ -182,8 +198,15 @@ fn scrollable_subset_from(
                     .width(Length::Fill)
                     .center_y();
 
-                if selected.clone().map(|y| (x.clone() == y)).unwrap_or_default() {
-                    c.style(selected_entry as for<'a> fn(&'a Theme) -> iced::widget::container::Appearance)
+                if selected
+                    .clone()
+                    .map(|y| (x.clone() == y))
+                    .unwrap_or_default()
+                {
+                    c.style(
+                        selected_entry
+                            as for<'a> fn(&'a Theme) -> iced::widget::container::Appearance,
+                    )
                 } else {
                     c
                 }
