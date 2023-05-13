@@ -1,11 +1,9 @@
 use iced::{
     executor,
-    keyboard::KeyCode,
     widget::{column, scrollable, text_input},
     window, Alignment, Application, Command, Element, Settings, Theme,
 };
 
-use iced_native::keyboard::Event;
 use interface_scrolling::{results_scrollbox, SCROLLABLE_ID};
 use interface_searchbox::{searchbox, SEARCHBOX_ID};
 use messages::Message;
@@ -14,7 +12,7 @@ use std::sync::Arc;
 use actions::actions::{action::Action, action_database::ActionDatabase};
 use ipc_communication::message::IpcMessage;
 
-use super::unix_stream_sub::unix_stream_subscription;
+use unix_stream_subscription::unix_stream_subscription;
 use iced_keyboard_capture::keyboard_capture;
 
 pub fn open_window(actions: Arc<ActionDatabase>) -> Result<(), iced::Error> {
@@ -112,29 +110,11 @@ impl Application for SearchingWindow {
 
         let scrollbox = results_scrollbox(&self.results, self.scroll_top, &self.selected);
 
-        let key_eventer = keyboard_capture().on_key_event(handle_key_event);
+        let key_eventer = keyboard_capture().on_key_event(key_shortcuts::handle_key_event);
 
         let page = column!(scrollbox, searchbox, key_eventer).align_items(Alignment::Center);
 
         page.into()
-    }
-}
-
-fn handle_key_event(e: Event) -> Option<Message> {
-    let Event::KeyPressed {key_code, modifiers} = e else { return None; };
-
-    match key_code {
-        KeyCode::F4 => {
-            if modifiers.alt() {
-                Some(Message::HideWindow)
-            } else {
-                None
-            }
-        }
-        KeyCode::Escape => Some(Message::HideWindow),
-        KeyCode::Down => Some(Message::SelectNext),
-        KeyCode::Up => Some(Message::SelectPrevious),
-        _ => None,
     }
 }
 
