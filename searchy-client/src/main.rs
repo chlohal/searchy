@@ -1,6 +1,4 @@
-mod ipc_communication;
-
-use ipc_communication::{client_side::send_socket};
+use ipc_communication::client_side::send_socket;
 use std::env::args;
 
 fn main() {

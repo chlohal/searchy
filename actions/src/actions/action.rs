@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
-use crate::desktop_files::{application_file::ApplicationFile, run_application::run_application};
+use crate::varieties::desktop_files::{application_file::ApplicationFile, run_application::run_application};
 
-use crate::path_executables::run_shell_command::run_shell_command;
+use crate::varieties::path_executables::run_shell_command::run_shell_command;
 
 #[derive(Debug)]
 pub enum Action {

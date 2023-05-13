@@ -2,7 +2,7 @@ use std::path::Path;
 
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 
-use crate::desktop_files::application_file::ApplicationFile;
+use crate::varieties::desktop_files::application_file::ApplicationFile;
 
 use super::action::Action;
 

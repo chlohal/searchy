@@ -11,9 +11,9 @@ use iced_native::futures::{
     executor::block_on, SinkExt,
 };
 
-use crate::ipc_communication::{message::IpcMessage, server_side::listen_socket};
+use ipc_communication::{message::IpcMessage, server_side::listen_socket};
 
-use super::window::Message;
+use messages::Message;
 
 pub fn unix_stream_subscription() -> Subscription<Message> {
     subscription::run(stream_builder)

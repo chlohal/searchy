@@ -58,9 +58,9 @@ impl PartialEq for ApplicationFile {
 
 #[derive(Debug, Clone)]
 pub struct ApplicationFileAction {
-    name: String,
-    icon: PathBuf,
-    exec: String,
+    pub name: String,
+    pub icon: PathBuf,
+    pub exec: String,
 }
 
 pub fn parse_application_file(filename: PathBuf) -> Result<ApplicationFile, Error> {
