@@ -32,7 +32,7 @@ impl ActionDatabase {
         results.sort_by(|a, b| -> Ordering {
             let a_score = score_action(a, query, &matcher);
             let b_score = score_action(b, query, &matcher);
-            a_score.cmp(&b_score)
+            b_score.cmp(&a_score)
         });
 
         results

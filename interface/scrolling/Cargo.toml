@@ -10,3 +10,4 @@ iced = "0.9.0"
 actions = { path = "../../actions" }
 once_cell = "1.17.1"
 messages = { path = "../messages" }
+styling = { path = "../styling" }

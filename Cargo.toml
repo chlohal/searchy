@@ -10,6 +10,7 @@ members = [
     "interface/messages",
     "interface/searchbox",
     "unix_stream_subscription",
-    "interface/key_shortcuts"
+    "interface/key_shortcuts",
+    "interface/styling"
 ]
 

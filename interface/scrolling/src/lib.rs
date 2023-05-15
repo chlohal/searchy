@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc};
 
 use actions::actions::Action;
 use iced::{
@@ -6,16 +6,27 @@ use iced::{
         container, container::Appearance, mouse_area, scrollable, scrollable::Properties, text,
         vertical_space, Column, Scrollable,
     },
-    Alignment, Background, Color, Element, Length, Theme,
+    Alignment, Background, Color, Element, Length, Theme, Command,
 };
 
-static PAGE_SIZE: usize = 20;
-static ENTRY_HEIGHT: f32 = 50.0;
+pub static PAGE_SIZE: usize = 5;
+pub static ENTRY_HEIGHT: u32 = 50;
+
+static ENTRY_HEIGHT_F: f32 = ENTRY_HEIGHT as f32;
 
 use messages::Message;
 use once_cell::sync::Lazy;
+use styling::{COLOR_HIGHLIGHT_BG, ITEM_PADDING};
 
 pub static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
+
+pub fn scroll_to_view(index: usize, total_count: usize) -> Command<Message> {
+    let index_pc = ((index + PAGE_SIZE) as f32) / (total_count as f32);
+
+    eprintln!("{}", index_pc);
+
+    scrollable::snap_to(SCROLLABLE_ID.clone(), scrollable::RelativeOffset { x: 0.0, y: index_pc })
+}
 
 pub fn results_scrollbox(
     results: &Vec<Arc<Action>>,
@@ -43,9 +54,9 @@ fn scrollable_subset_from(
 
     let slice = &results[start_index..end_index];
 
-    let before_space = vertical_space(Length::Fixed(ENTRY_HEIGHT * (start_index as f32)));
+    let before_space = vertical_space(Length::Fixed(ENTRY_HEIGHT_F * (start_index as f32)));
     let after_space = vertical_space(Length::Fixed(
-        ENTRY_HEIGHT * ((results.len() - end_index) as f32),
+        ENTRY_HEIGHT_F * ((results.len() - end_index) as f32),
     ));
 
     let elem_iter = Some(Into::<Element<Message>>::into(before_space))
@@ -53,9 +64,10 @@ fn scrollable_subset_from(
         .chain(slice.iter().map(|x| {
             mouse_area({
                 let c = container(text(x.to_string()))
-                    .height(Length::Fixed(ENTRY_HEIGHT))
+                    .height(Length::Fixed(ENTRY_HEIGHT_F))
                     .width(Length::Fill)
-                    .center_y();
+                    .center_y()
+                    .padding(ITEM_PADDING);
 
                 if selected
                     .clone()
@@ -85,7 +97,7 @@ fn scrollable_subset_from(
 fn selected_entry(_: &Theme) -> Appearance {
     Appearance {
         text_color: None,
-        background: Some(Background::Color(Color::from_rgb8(0xff, 0x00, 0xaa))),
+        background: Some(Background::Color(COLOR_HIGHLIGHT_BG.into())),
         border_radius: 0.0,
         border_width: 0.0,
         border_color: Color::TRANSPARENT,

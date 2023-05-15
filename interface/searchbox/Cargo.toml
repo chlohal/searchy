@@ -9,3 +9,5 @@ edition = "2021"
 iced = "0.9"
 once_cell = "1.17.1"
 messages = { path = "../messages" }
+interface_scrolling = { path = "../scrolling" }
+styling = { path = "../styling" }
