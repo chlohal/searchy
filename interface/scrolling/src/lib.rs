@@ -1,4 +1,4 @@
-use std::{sync::Arc};
+use std::sync::Arc;
 
 use actions::actions::Action;
 use iced::{
@@ -6,12 +6,13 @@ use iced::{
         container, container::Appearance, mouse_area, scrollable, scrollable::Properties, text,
         vertical_space, Column, Scrollable,
     },
-    Alignment, Background, Color, Element, Length, Theme, Command,
+    Alignment, Background, Color, Command, Element, Length, Theme,
 };
 
 pub static PAGE_SIZE: usize = 5;
 pub static ENTRY_HEIGHT: u32 = 50;
 
+static VISIBLE_PAGE_SIZE: usize = PAGE_SIZE * 3;
 static ENTRY_HEIGHT_F: f32 = ENTRY_HEIGHT as f32;
 
 use messages::Message;
@@ -25,7 +26,13 @@ pub fn scroll_to_view(index: usize, total_count: usize) -> Command<Message> {
 
     eprintln!("{}", index_pc);
 
-    scrollable::snap_to(SCROLLABLE_ID.clone(), scrollable::RelativeOffset { x: 0.0, y: index_pc })
+    scrollable::snap_to(
+        SCROLLABLE_ID.clone(),
+        scrollable::RelativeOffset {
+            x: 0.0,
+            y: index_pc,
+        },
+    )
 }
 
 pub fn results_scrollbox(
@@ -45,12 +52,18 @@ fn scrollable_subset_from(
     scroll_top: f32,
     selected: &Option<Arc<Action>>,
 ) -> iced::widget::Scrollable<'static, Message> {
-    let start_index: usize = std::cmp::min(
-        results.len() - PAGE_SIZE,
-        (scroll_top * ((results.len() - PAGE_SIZE) as f32)) as usize,
-    );
+    let result_count = results.len();
 
-    let end_index: usize = start_index + PAGE_SIZE;
+    let start_index: usize = if result_count < VISIBLE_PAGE_SIZE {
+        0
+    } else {
+        std::cmp::min(
+            result_count - VISIBLE_PAGE_SIZE,
+            (scroll_top * ((result_count - VISIBLE_PAGE_SIZE) as f32)) as usize,
+        )
+    };
+
+    let end_index: usize = std::cmp::min(result_count, start_index + VISIBLE_PAGE_SIZE);
 
     let slice = &results[start_index..end_index];
 
