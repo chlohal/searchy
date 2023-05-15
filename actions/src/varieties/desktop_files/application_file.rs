@@ -1,8 +1,8 @@
-use std::{collections::HashMap, io::Error, path::PathBuf, str::FromStr};
+use std::{collections::HashMap, io::Error, path::PathBuf, str::FromStr, hash::Hash};
 
 use super::ini_file::parse_ini_file;
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Hash)]
 pub enum ApplicationType {
     #[default]
     Application,
@@ -50,13 +50,41 @@ pub struct ApplicationFile {
     pub file_address: PathBuf
 }
 
+impl Hash for ApplicationFile {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.app_name.hash(state);
+        self.app_type.hash(state);
+        self.app_generic_name.hash(state);
+        self.app_comment.hash(state);
+        self.app_icon.hash(state);
+        self.app_hidden.hash(state);
+        self.app_only_show_in.hash(state);
+        self.app_not_show_in.hash(state);
+        self.app_dbus_activatable.hash(state);
+        self.app_try_exec.hash(state);
+        self.app_exec.hash(state);
+        self.app_cwd.hash(state);
+        self.app_terminal.hash(state);
+        self.app_actions.hash(state);
+        self.app_mime_types.hash(state);
+        self.app_categories.hash(state);
+        self.app_implements.hash(state);
+        self.app_keywords.hash(state);
+        self.app_startup_wm_class.hash(state);
+        self.app_url.hash(state);
+        self.app_prefers_non_default_gpu.hash(state);
+        self.app_single_main_window.hash(state);
+        self.file_address.hash(state);
+    }
+}
+
 impl PartialEq for ApplicationFile {
     fn eq(&self, other: &Self) -> bool {
         self.file_address == other.file_address
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct ApplicationFileAction {
     pub name: String,
     pub icon: PathBuf,

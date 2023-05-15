@@ -1,22 +1,26 @@
-use std::{cmp::Ordering, sync::Arc};
+use std::sync::Arc;
 
-use fuzzy_matcher::skim::SkimMatcherV2;
+use simsearch::SimSearch;
 
-use super::{action::Action, search_db::score_action};
+use super::action::Action;
 
 #[derive(Default)]
 pub struct ActionDatabase {
     pub actions: Vec<Arc<Action>>,
+    search_engine: SimSearch<usize>,
 }
 
 impl ActionDatabase {
     pub fn new() -> Self {
         Self {
             actions: Vec::new(),
+            search_engine: SimSearch::new(),
         }
     }
 
     pub fn add(&mut self, action: Action) {
+        self.search_engine
+            .insert(self.actions.len(), action.search_queriable().as_str());
         self.actions.push(Arc::from(action));
     }
 
@@ -25,17 +29,16 @@ impl ActionDatabase {
     }
 
     pub fn get_action_results(&self, query: &str) -> Vec<Arc<Action>> {
-        let matcher = SkimMatcherV2::default();
+        if query == "" {
+            return self.actions.clone();
+        }
 
-        let mut results = self.actions.clone();
-
-        results.sort_by(|a, b| -> Ordering {
-            let a_score = score_action(a, query, &matcher);
-            let b_score = score_action(b, query, &matcher);
-            b_score.cmp(&a_score)
-        });
+        let results = self.search_engine.search(query);
 
         results
+            .iter()
+            .map(|x| self.actions.get(*x).cloned())
+            .flatten()
+            .collect::<Vec<Arc<Action>>>()
     }
 }
-
