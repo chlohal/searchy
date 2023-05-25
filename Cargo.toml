@@ -11,6 +11,10 @@ members = [
     "interface/searchbox",
     "unix_stream_subscription",
     "interface/key_shortcuts",
-    "interface/styling"
+    "interface/styling",
+    "interface/action_entry",
+    "interface/icons",
+    "interface/javascript_repl_history",
+    "interface/results"
 ]
 

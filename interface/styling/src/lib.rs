@@ -6,3 +6,4 @@ pub static COLOR_DARK_BG: [f32; 3] = hex_color!(0x681885);
 
 pub static COLOR_HIGHLIGHT_BG: [f32; 3] = hex_color!(0xff00aa);
 
+pub static ENTRY_HEIGHT: u32 = 50;

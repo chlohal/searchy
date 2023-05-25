@@ -1,4 +1,4 @@
-use actions::{action::Action, action_database::ActionDatabase};
+pub use actions::{Action, action_database::ActionDatabase};
 use varieties::{
     desktop_files::desktop_file_search::application_files,
     path_executables::path_executable_search::path_executables,

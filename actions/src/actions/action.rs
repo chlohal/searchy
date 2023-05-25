@@ -35,16 +35,25 @@ impl Action {
             Action::Application(a) => a.app_name.clone(),
             Action::ShellCommand(cmd) => format!(
                 "{} ({})",
-                cmd.file_name()
-                    .map_or_else(
-                        || cmd.to_string_lossy(),
-                        |basename| basename.to_string_lossy()
-                    )
-                    .replace("-", " "),
+                try_basename(cmd).replace("-", " "),
                 cmd.to_string_lossy()
             ),
         }
     }
+    pub fn primary_name(&self) -> String {
+        match self {
+            Action::Application(a) => a.app_name.clone(),
+            Action::ShellCommand(p) => try_basename(p),
+        }
+    }
+}
+
+fn try_basename(cmd: &PathBuf) -> String {
+    cmd.file_name()
+                    .map_or_else(
+                        || cmd.to_string_lossy(),
+                        |basename| basename.to_string_lossy()
+                    ).to_string()
 }
 
 impl PartialEq for Action {

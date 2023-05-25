@@ -1,4 +1,4 @@
 pub mod action_database;
-pub mod action;
+mod action;
 
-pub type Action = action::Action;
+pub use action::Action;

@@ -1,0 +1,14 @@
+[package]
+name = "results"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+interface_scrolling = { path = "../scrolling" }
+interface_searchbox = { path = "../searchbox" }
+actions = { path = "../../actions" }
+iced = "0.9.0"
+iced_native = "0.10.3"
+messages = { path = "../messages" }

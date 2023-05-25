@@ -19,10 +19,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c71b1793ee61086797f5c80b6efa2b8ffa6d5dd703f118545808a7f2e27f7046"
 
 [[package]]
+name = "action_entry"
+version = "0.1.0"
+dependencies = [
+ "actions",
+ "iced",
+ "icons",
+ "messages",
+]
+
+[[package]]
 name = "actions"
 version = "0.1.0"
 dependencies = [
- "fuzzy-matcher",
+ "simsearch",
 ]
 
 [[package]]
@@ -775,15 +785,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fuzzy-matcher"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54614a3312934d066701a80f20f15fa3b56d67ac7722b39eea5b4c9dd1d66c94"
-dependencies = [
- "thread_local",
-]
-
-[[package]]
 name = "fxhash"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1103,6 +1104,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "icons"
+version = "0.1.0"
+
+[[package]]
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1134,8 +1139,10 @@ dependencies = [
 name = "interface_scrolling"
 version = "0.1.0"
 dependencies = [
+ "action_entry",
  "actions",
  "iced",
+ "javascript_repl_history",
  "messages",
  "once_cell",
  "styling",
@@ -1155,6 +1162,13 @@ dependencies = [
 [[package]]
 name = "ipc_communication"
 version = "0.1.0"
+
+[[package]]
+name = "javascript_repl_history"
+version = "0.1.0"
+dependencies = [
+ "iced",
+]
 
 [[package]]
 name = "jni-sys"
@@ -1866,6 +1880,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1382d1f0a252c4bf97dc20d979a2fdd05b024acd7c2ed0f7595d7817666a157"
 
 [[package]]
+name = "results"
+version = "0.1.0"
+dependencies = [
+ "actions",
+ "iced",
+ "iced_native",
+ "interface_scrolling",
+ "interface_searchbox",
+ "messages",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1931,6 +1957,7 @@ dependencies = [
  "key_shortcuts",
  "messages",
  "once_cell",
+ "results",
  "unix_stream_subscription",
 ]
 
@@ -1977,6 +2004,16 @@ name = "simd-adler32"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "238abfbb77c1915110ad968465608b68e869e0772622c9656714e73e5a1a522f"
+
+[[package]]
+name = "simsearch"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1649c86f6ff4bec1c5a96b834f1e0da09eff92d85e3963286a61f41afca65de5"
+dependencies = [
+ "strsim",
+ "triple_accel",
+]
 
 [[package]]
 name = "siphasher"
@@ -2127,16 +2164,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "thread_local"
-version = "1.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fdd6f064ccff2d6567adcb3873ca630700f00b5ad3f060c25b5dcfd9a4ce152"
-dependencies = [
- "cfg-if",
- "once_cell",
-]
-
-[[package]]
 name = "tiny-skia"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2186,6 +2213,12 @@ dependencies = [
  "toml_datetime",
  "winnow",
 ]
+
+[[package]]
+name = "triple_accel"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "622b09ce2fe2df4618636fb92176d205662f59803f39e70d1c333393082de96c"
 
 [[package]]
 name = "ttf-parser"

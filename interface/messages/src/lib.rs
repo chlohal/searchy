@@ -5,12 +5,19 @@ use ipc_communication::message::IpcMessage;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    LaunchSelected,
-    ClickOption(Arc<Action>),
+    Search(String),
+    Ipc(IpcMessage),
+    ResultMessage(SearchResultMessage),
+    HideWindow,
+    GenericKey,
+}
+
+#[derive(Debug, Clone)]
+pub enum SearchResultMessage {
     SelectNext,
     SelectPrevious,
-    Search(String),
     Scroll(f32),
-    Ipc(IpcMessage),
-    HideWindow,
+    Search(String),
+    ClickOption(Arc<Action>),
+    LaunchSelected
 }

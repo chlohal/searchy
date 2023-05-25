@@ -11,3 +11,5 @@ actions = { path = "../../actions" }
 once_cell = "1.17.1"
 messages = { path = "../messages" }
 styling = { path = "../styling" }
+action_entry = { path = "../action_entry" }
+javascript_repl_history = { path = "../javascript_repl_history" }

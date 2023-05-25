@@ -19,3 +19,4 @@ messages = { path = "../interface/messages" }
 interface_searchbox = { path = "../interface/searchbox" }
 unix_stream_subscription = { path = "../unix_stream_subscription" }
 key_shortcuts = { path = "../interface/key_shortcuts" }
+results = { path = "../interface/results" }

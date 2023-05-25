@@ -1,0 +1,10 @@
+[package]
+name = "action_entry"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actions = { path = "../../actions" }
+iced = "0.9"
+icons = { path = "../icons" }
+messages = { path = "../messages" }
