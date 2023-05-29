@@ -9,7 +9,7 @@ use interface_scrolling::{ENTRY_HEIGHT, PAGE_SIZE, SCROLLABLE_ID};
 use interface_searchbox::{searchbox, SEARCHBOX_ID};
 use messages::{Message};
 use results::{SearchType, ActionsSearch, results_view};
-use std::{sync::Arc, time::Instant};
+use std::{sync::Arc, time::Instant, collections::VecDeque};
 
 use actions::actions::{Action, action_database::ActionDatabase};
 use ipc_communication::message::IpcMessage;
@@ -34,7 +34,7 @@ pub fn open_window(actions: Arc<ActionDatabase>) -> Result<(), iced::Error> {
 pub struct SearchingWindow {
     pub last_search: Instant,
     pub search_query: String,
-    pub do_type: SearchType,
+    pub do_type_stack: VecDeque<SearchType>,
 }
 
 impl Application for SearchingWindow {
@@ -49,12 +49,16 @@ impl Application for SearchingWindow {
             SearchingWindow {
                 last_search: Instant::now(),
                 search_query: "".into(),
-                do_type: SearchType::ApplicationLaunch(ActionsSearch {
-                    selected: None,
-                    actions: init_data,
-                    results,
-                    scroll_top: 0.0,
-                }),
+                do_type_stack: {
+                    let mut stack = VecDeque::new();
+                    stack.push_back(SearchType::ApplicationLaunch(ActionsSearch {
+                        selected: None,
+                        actions: init_data,
+                        results,
+                        scroll_top: 0.0,
+                    }));
+                    stack
+                },
                 
             },
             Command::batch(vec![
@@ -88,18 +92,20 @@ impl Application for SearchingWindow {
                 ]),
                 IpcMessage::CloseProgram => window::close(),
                 IpcMessage::Refresh => Command::none(),
+                IpcMessage::AppSearch => self.reset_state(),
+                IpcMessage::Javascript => self.do_type_stack.push_back(SearchType::JavascriptRepl),
             },
             Message::Search(query) => {
                 self.search_query = query.clone();
                 if Instant::now().duration_since(self.last_search).as_millis()
                     >= MS_BETWEEN_SEARCHES
                 {
-                    self.do_type.update(messages::SearchResultMessage::Search(query))
+                    self.current_do_type().update(messages::SearchResultMessage::Search(query))
                 } else {
                     Command::none()
                 }
             },
-            Message::ResultMessage(m) => self.do_type.update(m),
+            Message::ResultMessage(m) => self.current_do_type().update(m),
         }
     }
 
@@ -107,7 +113,7 @@ impl Application for SearchingWindow {
         let searchbox = searchbox(&self.search_query);
 
         
-        let scrollbox = results_view(&self.do_type);
+        let scrollbox = results_view(&self.current_do_type());
 
         let key_eventer = keyboard_capture().on_key_event(key_shortcuts::handle_key_event);
 
@@ -118,16 +124,24 @@ impl Application for SearchingWindow {
 }
 
 impl SearchingWindow {
+    pub fn current_do_type<'a>(&self) -> &'a SearchType {
+        self.do_type_stack.back().unwrap()
+    }
     pub fn reset_state(&mut self) {
         self.search_query = "".to_string();
 
-        match self.do_type {
+        //remove all doTypes except for the first one
+        while self.do_type_stack.len() > 1 {
+            self.do_type_stack.pop_back();
+        }
+
+        match self.current_do_type() {
             SearchType::ApplicationLaunch(ref mut search) => {
                 search.selected = None;
                 search.results = search.actions.get_action_results("");
                 search.scroll_top = 0.0;
             },
-            SearchType::ActionSubmenu(_) => todo!(),
+            _ => panic!("First doType must be an ApplicationLaunch")
         }
     }
 }

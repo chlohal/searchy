@@ -1168,6 +1168,8 @@ name = "javascript_repl_history"
 version = "0.1.0"
 dependencies = [
  "iced",
+ "iced_native",
+ "messages",
 ]
 
 [[package]]
@@ -1888,6 +1890,7 @@ dependencies = [
  "iced_native",
  "interface_scrolling",
  "interface_searchbox",
+ "javascript_repl_history",
  "messages",
 ]
 

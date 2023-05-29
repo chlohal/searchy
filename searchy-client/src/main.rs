@@ -21,7 +21,10 @@ fn main() {
             r#"USAGE: searchy [messages...]
         
     message options:
-        - open-window"#
+        - open-window
+        - app-search
+        - javascript
+        - refresh"#
         );
     }
 }

@@ -32,7 +32,13 @@ impl Action {
 
     pub fn search_queriable(&self) -> String {
         match self {
-            Action::Application(a) => a.app_name.clone(),
+            Action::Application(a) => format!(
+                "{} ({})\n{}\n{}",
+                a.app_name,
+                a.app_generic_name.as_ref().unwrap_or(&"".to_string()),
+                a.app_comment.as_ref().unwrap_or(&"".to_string()),
+                a.app_keywords.as_ref().unwrap_or(&vec![]).join("; ")
+            ),
             Action::ShellCommand(cmd) => format!(
                 "{} ({})",
                 try_basename(cmd).replace("-", " "),
@@ -50,10 +56,11 @@ impl Action {
 
 fn try_basename(cmd: &PathBuf) -> String {
     cmd.file_name()
-                    .map_or_else(
-                        || cmd.to_string_lossy(),
-                        |basename| basename.to_string_lossy()
-                    ).to_string()
+        .map_or_else(
+            || cmd.to_string_lossy(),
+            |basename| basename.to_string_lossy(),
+        )
+        .to_string()
 }
 
 impl PartialEq for Action {

@@ -4,12 +4,16 @@ use std::fmt::Display;
 pub enum IpcMessage {
     OpenWindow,
     CloseProgram,
-    Refresh
+    Refresh,
+    AppSearch,
+    Javascript
 }
 
 const OPEN_WINDOW: &str = "open-window";
 const CLOSE_PROGRAM: &str = "close-program";
 const REFRESH: &str = "refresh";
+const APP_SEARCH: &str = "app-search";
+const JAVASCRIPT: &str = "javascript";
 
 impl From<IpcMessage> for &str {
     fn from(val: IpcMessage) -> Self {
@@ -17,6 +21,8 @@ impl From<IpcMessage> for &str {
             IpcMessage::OpenWindow => OPEN_WINDOW,
             IpcMessage::CloseProgram => CLOSE_PROGRAM,
             IpcMessage::Refresh => REFRESH,
+            IpcMessage::AppSearch => APP_SEARCH,
+            IpcMessage::Javascript => JAVASCRIPT,
         }
     }
 }

@@ -7,6 +7,7 @@ use iced::{
 };
 use interface_scrolling::{results_scrollbox, SCROLLABLE_ID};
 use interface_searchbox::SEARCHBOX_ID;
+use javascript_repl_history::repl_view;
 use messages::{Message, SearchResultMessage};
 
 pub struct ActionsSearch {
@@ -85,6 +86,7 @@ impl ActionsSearch {
 pub enum SearchType {
     ApplicationLaunch(ActionsSearch),
     ActionSubmenu(ActionsSearch),
+    JavascriptRepl,
 }
 
 impl SearchType {
@@ -93,6 +95,7 @@ impl SearchType {
             SearchType::ActionSubmenu(actions) | SearchType::ApplicationLaunch(actions) => {
                 actions.update(message)
             }
+            SearchType::JavascriptRepl => todo!(),
         }
     }
 }
@@ -103,5 +106,6 @@ pub fn results_view(search: &SearchType) -> Scrollable<'static, Message> {
             results_scrollbox(&search.results, search.scroll_top, &search.selected)
         }
         SearchType::ActionSubmenu(_) => todo!(),
+        SearchType::JavascriptRepl => repl_view(),
     }
 }
