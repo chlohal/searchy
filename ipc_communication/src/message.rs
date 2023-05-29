@@ -6,42 +6,57 @@ pub enum IpcMessage {
     CloseProgram,
     Refresh,
     AppSearch,
-    Javascript
+    Javascript,
 }
 
-const OPEN_WINDOW: &str = "open-window";
-const CLOSE_PROGRAM: &str = "close-program";
-const REFRESH: &str = "refresh";
-const APP_SEARCH: &str = "app-search";
-const JAVASCRIPT: &str = "javascript";
-
-impl From<IpcMessage> for &str {
-    fn from(val: IpcMessage) -> Self {
-        match val {
-            IpcMessage::OpenWindow => OPEN_WINDOW,
-            IpcMessage::CloseProgram => CLOSE_PROGRAM,
-            IpcMessage::Refresh => REFRESH,
-            IpcMessage::AppSearch => APP_SEARCH,
-            IpcMessage::Javascript => JAVASCRIPT,
+macro_rules! enum_parsable {
+    { $typ:path => { $( $a:path => $b:literal ),* } }   => {
+        impl From<$typ> for &str {
+            fn from(val: $typ) -> Self {
+                match val {
+                    $(
+                       $a => $b,
+                    )*
+                }
+            }
         }
-    }
-}
 
-impl Display for IpcMessage {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(Into::<&str>::into(*self))
-    }
-}
-
-impl TryFrom<String> for IpcMessage {
-    type Error = String;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        match value.as_str() {
-            OPEN_WINDOW => Ok(IpcMessage::OpenWindow),
-            CLOSE_PROGRAM => Ok(IpcMessage::CloseProgram),
-            REFRESH => Ok(IpcMessage::Refresh),
-            v => Err(format!("Could not parse IPC message from {}", v))
+        impl Display for $typ {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(Into::<&str>::into(*self))
+            }
         }
+
+        impl TryFrom<String> for $typ {
+            type Error = String;
+
+            fn try_from(value: String) -> Result<Self, Self::Error> {
+                match value.as_str() {
+                    $(
+                        $b => Ok($a),
+                     )*
+                     v => Err(format!("Could not parse IPC message from {}", v)),
+                }
+            }
+        }
+
+        impl $typ {
+            pub fn representations() -> Vec<&'static str> {
+                vec![
+                    $( $b, )*
+                ]
+            }
+        }
+
+    };
+}
+
+enum_parsable! {
+    IpcMessage => {
+        IpcMessage::OpenWindow => "open-window",
+        IpcMessage::CloseProgram => "close-program",
+        IpcMessage::Refresh => "refresh",
+        IpcMessage::AppSearch => "app-search",
+        IpcMessage::Javascript => "javascript"
     }
 }

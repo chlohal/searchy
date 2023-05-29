@@ -7,7 +7,7 @@ use iced::{
 };
 use interface_scrolling::{results_scrollbox, SCROLLABLE_ID};
 use interface_searchbox::SEARCHBOX_ID;
-use javascript_repl_history::repl_view;
+use javascript_repl_history::{repl_view, ReplInput};
 use messages::{Message, SearchResultMessage};
 
 pub struct ActionsSearch {
@@ -15,6 +15,17 @@ pub struct ActionsSearch {
     pub actions: Arc<ActionDatabase>,
     pub results: Vec<Arc<Action>>,
     pub scroll_top: f32,
+}
+
+impl From<Arc<ActionDatabase>> for ActionsSearch {
+    fn from(value: Arc<ActionDatabase>) -> Self {
+        ActionsSearch {
+            selected: None,
+            results: value.get_action_results(""),
+            actions: value,
+            scroll_top: 0.0,
+        }
+    }
 }
 
 impl ActionsSearch {
@@ -86,7 +97,7 @@ impl ActionsSearch {
 pub enum SearchType {
     ApplicationLaunch(ActionsSearch),
     ActionSubmenu(ActionsSearch),
-    JavascriptRepl,
+    JavascriptRepl(ReplInput),
 }
 
 impl SearchType {
@@ -95,7 +106,7 @@ impl SearchType {
             SearchType::ActionSubmenu(actions) | SearchType::ApplicationLaunch(actions) => {
                 actions.update(message)
             }
-            SearchType::JavascriptRepl => todo!(),
+            SearchType::JavascriptRepl(_) => todo!(),
         }
     }
 }
@@ -106,6 +117,6 @@ pub fn results_view(search: &SearchType) -> Scrollable<'static, Message> {
             results_scrollbox(&search.results, search.scroll_top, &search.selected)
         }
         SearchType::ActionSubmenu(_) => todo!(),
-        SearchType::JavascriptRepl => repl_view(),
+        SearchType::JavascriptRepl(repl) => repl_view(repl),
     }
 }

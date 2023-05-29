@@ -1957,6 +1957,7 @@ dependencies = [
  "interface_scrolling",
  "interface_searchbox",
  "ipc_communication",
+ "javascript_repl_history",
  "key_shortcuts",
  "messages",
  "once_cell",

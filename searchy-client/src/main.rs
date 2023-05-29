@@ -1,4 +1,4 @@
-use ipc_communication::client_side::send_socket;
+use ipc_communication::{client_side::send_socket, message::IpcMessage};
 use std::env::args;
 
 fn main() {
@@ -14,17 +14,16 @@ fn main() {
         }
     }
 
-    
-
     if has_sent == 0 {
         eprintln!(
             r#"USAGE: searchy [messages...]
-        
+
     message options:
-        - open-window
-        - app-search
-        - javascript
-        - refresh"#
+{}"#,
+            IpcMessage::representations()
+                .iter()
+                .map(|x| format!("    - {}\n", x))
+                .collect::<String>()
         );
     }
 }
