@@ -26,6 +26,7 @@ dependencies = [
  "iced",
  "icons",
  "messages",
+ "styling",
 ]
 
 [[package]]

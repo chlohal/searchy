@@ -8,7 +8,17 @@ pub static COLOR_HIGHLIGHT_BG: [f32; 3] = hex_color!(0xff00aa);
 
 pub static ENTRY_HEIGHT: u32 = 50;
 
-pub static FONT: iced::Font = iced::Font::External {
+pub static MONO_FONT_REGULAR: iced::Font = iced::Font::External {
     name: "Fira Code",
     bytes: include_bytes!("../../../assets/fonts/FiraCode-Regular.ttf"),
+};
+
+pub static MONO_FONT_MEDIUM: iced::Font = iced::Font::External {
+    name: "Fira Code",
+    bytes: include_bytes!("../../../assets/fonts/FiraCode-Medium.ttf"),
+};
+
+pub static MONO_FONT_BOLD: iced::Font = iced::Font::External {
+    name: "Fira Code",
+    bytes: include_bytes!("../../../assets/fonts/FiraCode-Bold.ttf"),
 };

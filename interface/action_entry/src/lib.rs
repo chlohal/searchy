@@ -4,12 +4,14 @@ use ::actions::{Action, Action::Application, Action::ShellCommand};
 use iced::{widget::{Row, text, row, Text, container}, Font, Length};
 use icons::Icon;
 use messages::Message;
+use styling::{MONO_FONT_MEDIUM, MONO_FONT_BOLD, MONO_FONT_REGULAR};
 
 
 
 
 pub fn make_entry(action: &Arc<Action>) -> Row<'static, Message> {
-    let label = text(action.primary_name()).width(Length::FillPortion(2));
+    let label = text(action.primary_name()).width(Length::FillPortion(2))
+        .font(MONO_FONT_BOLD);
 
     let icon = iced_icon(match **action {
         Action::Application(_) => &icons::icons::WINDOW_MAXIMIZE_REGULAR,
@@ -27,7 +29,8 @@ fn detail(action: &Arc<Action>) -> Row<'static, Message> {
             row!()
         },
         ShellCommand(command) => {
-            let tail = text(command.to_string_lossy());
+            let tail = text(command.to_string_lossy())
+                .font(MONO_FONT_MEDIUM);
 
             row!(tail)
         },

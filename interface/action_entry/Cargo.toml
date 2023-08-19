@@ -8,3 +8,4 @@ actions = { path = "../../actions" }
 iced = "0.9"
 icons = { path = "../icons" }
 messages = { path = "../messages" }
+styling = { path = "../styling" }

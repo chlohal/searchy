@@ -2,9 +2,9 @@ use iced::{
     widget::{container::Appearance, container, text_input, Container},
     Length, Theme, Background, Color,
 };
-use messages::{Message, SearchResultMessage};
+use messages::Message;
 use once_cell::sync::Lazy;
-use styling::{COLOR_DARK_BG, ITEM_PADDING, ENTRY_HEIGHT};
+use styling::{COLOR_DARK_BG, ITEM_PADDING, ENTRY_HEIGHT, MONO_FONT_REGULAR};
 
 pub static SEARCHBOX_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 
@@ -13,6 +13,7 @@ pub fn searchbox(content: &String) -> Container<'static, Message> {
         text_input("Search", content)
             .on_input(Message::Search)
             .width(Length::Fill)
+            .font(MONO_FONT_REGULAR)
             .id(SEARCHBOX_ID.clone()),
     )
     .height(Length::Fixed(ENTRY_HEIGHT as f32))
