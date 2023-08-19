@@ -1,17 +1,24 @@
-use std::{path::Path, ffi::OsString, process::{Command, Stdio}};
+use std::{ffi::OsString, process::{Command, Stdio}};
 
-pub fn run_shell_command(command_name: &Path) -> Result<String, String> {
+pub fn run_shell_command(command_name: impl Into<OsString>, open_terminal: bool) -> Result<String, String> {
 
-    let mut bash_command = command_name.as_os_str().to_owned();
-    bash_command.extend(vec![OsString::from("; $SHELL")]);
+    let mut bash_command = Into::<OsString>::into(command_name);
+    bash_command.extend(vec![OsString::from("; exec $SHELL")]);
 
     let mut cmd: Command = Command::new("nohup");
-    cmd
+
+    if open_terminal {
+        cmd
         .arg("x-terminal-emulator")
-        .arg("-e")
+        .arg("-e");
+    }
+
+    cmd
         .arg("bash")
         .arg("-c")
         .arg(bash_command);
+
+    eprintln!("{:?}", cmd);
 
     let child = cmd.stdout(Stdio::null())
         .stderr(Stdio::null())

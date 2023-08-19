@@ -7,6 +7,8 @@ pub const WIN: u8 = 0b0100;
 pub const ALT: u8 = 0b0010;
 pub const SHIFT: u8 = 0b0001;
 
+pub const CTRL_SHIFT: u8 = CTRL | SHIFT;
+
 pub fn match_friendly_modifier(modifiers: Modifiers) -> u8 {
     let mut r: u8 = 0;
 

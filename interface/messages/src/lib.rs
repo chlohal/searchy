@@ -10,6 +10,8 @@ pub enum Message {
     ResultMessage(SearchResultMessage),
     HideWindow,
     GenericKey,
+    ExecuteTypeShell,
+    ExecuteTypeTerminal
 }
 
 #[derive(Debug, Clone)]
@@ -19,5 +21,5 @@ pub enum SearchResultMessage {
     Scroll(f32),
     Search(String),
     ClickOption(Arc<Action>),
-    LaunchSelected
+    LaunchSelected,
 }

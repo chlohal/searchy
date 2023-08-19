@@ -2,46 +2,48 @@
 
 use std::marker::PhantomData;
 
-use iced::{event, keyboard, Element, Event};
+use iced::{event, Element, Event};
 
-use iced_native::{Length, Size, Widget};
+use iced_native::{
+    window::Event::{CloseRequested, Unfocused},
+    Length, Size, Widget,
+};
 
-
-
-pub fn keyboard_capture<'a, Message, Renderer>() -> KeyboardCapture<'a, Message, Renderer>
+pub fn close_requested_listener<'a, Message, Renderer>(
+) -> CloseRequestedListener<'a, Message, Renderer>
 where
     Renderer: iced_native::Renderer,
 {
-    KeyboardCapture::new()
+    CloseRequestedListener::new()
 }
 
-
-pub struct KeyboardCapture<'a, Message, Renderer> {
-    on_key_event: Option<Box<dyn Fn(keyboard::Event) -> Option<Message> + 'a>>,
+pub struct CloseRequestedListener<'a, Message, Renderer> {
+    on_close: Option<Box<dyn Fn() -> Option<Message> + 'a>>,
     _p: PhantomData<Renderer>,
 }
 
-impl<'a, Message, Renderer> KeyboardCapture<'a, Message, Renderer> {
-    pub fn on_key_event<F: Fn(keyboard::Event) -> Option<Message> + 'a>(mut self, evt: F) -> Self {
-        self.on_key_event = Some(Box::new(evt));
+impl<'a, Message, Renderer> CloseRequestedListener<'a, Message, Renderer> {
+    pub fn on_close<F: Fn() -> Option<Message> + 'a>(mut self, evt: F) -> Self {
+        self.on_close = Some(Box::new(evt));
         self
     }
 
     pub fn new() -> Self {
-        KeyboardCapture::default()
+        CloseRequestedListener::default()
     }
 }
 
-impl<'a, Message, Renderer> Default for KeyboardCapture<'a, Message, Renderer> {
+impl<'a, Message, Renderer> Default for CloseRequestedListener<'a, Message, Renderer> {
     fn default() -> Self {
-        KeyboardCapture {
-            on_key_event: None,
+        CloseRequestedListener {
+            on_close: None,
             _p: PhantomData,
         }
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for KeyboardCapture<'a, Message, Renderer>
+impl<'a, Message, Renderer> Widget<Message, Renderer>
+    for CloseRequestedListener<'a, Message, Renderer>
 where
     Message: Clone,
     Renderer: iced_native::Renderer,
@@ -72,14 +74,14 @@ where
         _clipboard: &mut dyn iced_native::Clipboard,
         shell: &mut iced_native::Shell<'_, Message>,
     ) -> event::Status {
-        let Event::Keyboard(k) = event else { return event::Status::Ignored };
+        if let Event::Window(CloseRequested | Unfocused) = event {
+            let Some(on_close) = &self.on_close else { return event::Status::Ignored };
 
-        let Some(on_key_event) = &self.on_key_event else { return event::Status::Ignored };
-
-        if let Some(message) = on_key_event(k) {
-            shell.publish(message);
-            return event::Status::Captured
+            if let Some(message) = on_close() {
+                shell.publish(message);
+            }
         }
+
         event::Status::Ignored
     }
 
@@ -96,13 +98,13 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<KeyboardCapture<'a, Message, Renderer>>
+impl<'a, Message, Renderer> From<CloseRequestedListener<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + iced_native::Renderer,
 {
-    fn from(area: KeyboardCapture<'a, Message, Renderer>) -> Element<'a, Message, Renderer> {
+    fn from(area: CloseRequestedListener<'a, Message, Renderer>) -> Element<'a, Message, Renderer> {
         Element::new(area)
     }
 }

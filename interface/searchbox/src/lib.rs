@@ -12,7 +12,6 @@ pub fn searchbox(content: &String) -> Container<'static, Message> {
     container(
         text_input("Search", content)
             .on_input(Message::Search)
-            .on_submit(Message::ResultMessage(SearchResultMessage::LaunchSelected))
             .width(Length::Fill)
             .id(SEARCHBOX_ID.clone()),
     )

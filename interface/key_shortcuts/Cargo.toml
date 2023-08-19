@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 iced = "0.9"
 messages = { path = "../messages" }
+ipc_communication = { path = "../../ipc_communication" }

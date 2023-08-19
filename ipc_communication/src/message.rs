@@ -6,7 +6,7 @@ pub enum IpcMessage {
     CloseProgram,
     Refresh,
     AppSearch,
-    Javascript,
+    Javascript
 }
 
 macro_rules! enum_parsable {

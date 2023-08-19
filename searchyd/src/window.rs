@@ -5,13 +5,14 @@ use iced::{
     Alignment, Application, Command, Element, Settings, Theme,
 };
 
+use iced_close_requested_listener::close_requested_listener;
 use interface_scrolling::{ENTRY_HEIGHT, PAGE_SIZE, SCROLLABLE_ID};
 use interface_searchbox::{searchbox, SEARCHBOX_ID};
 use messages::Message;
 use results::{results_view, ActionsSearch, SearchType};
 use std::{collections::VecDeque, sync::Arc, time::Instant};
 
-use actions::actions::{action_database::ActionDatabase, Action};
+use actions::{actions::{action_database::ActionDatabase, Action}, varieties::path_executables::run_shell_command::run_shell_command};
 use ipc_communication::message::IpcMessage;
 
 use iced_keyboard_capture::keyboard_capture;
@@ -115,6 +116,14 @@ impl Application for SearchingWindow {
                 }
             }
             Message::ResultMessage(m) => self.do_type_stack.back_mut().unwrap().update(m),
+            Message::ExecuteTypeShell => {
+                log_err(run_shell_command(self.search_query.clone(), false));
+                Command::perform((|| async { Message::HideWindow })(), |x| x)
+            },
+            Message::ExecuteTypeTerminal => {
+                log_err(run_shell_command(self.search_query.clone(), true));
+                Command::perform((|| async { Message::HideWindow })(), |x| x)
+            }
         }
     }
 
@@ -123,9 +132,11 @@ impl Application for SearchingWindow {
 
         let scrollbox = results_view(&self.do_type_stack.back().unwrap());
 
+        let close_listener = close_requested_listener().on_close(|| Some(Message::HideWindow));
+
         let key_eventer = keyboard_capture().on_key_event(key_shortcuts::handle_key_event);
 
-        let page = column!(key_eventer, searchbox, scrollbox).align_items(Alignment::Center);
+        let page = column!(close_listener, key_eventer, searchbox, scrollbox).align_items(Alignment::Center);
 
         page.into()
     }
@@ -148,5 +159,12 @@ impl SearchingWindow {
             }
             _ => panic!("First doType must be an ApplicationLaunch"),
         }
+    }
+}
+
+
+fn log_err<T, E: std::fmt::Debug>(err: Result<T, E>) {
+    if let Err(err) = err {
+        eprintln!("{:?}", err);
     }
 }

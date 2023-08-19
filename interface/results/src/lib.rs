@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use actions::{actions::Action, ActionDatabase};
+use actions::{actions::Action, ActionDatabase, varieties::{desktop_files::run_application::run_application, path_executables::run_shell_command::run_shell_command}};
 use iced::{
     widget::{scrollable, text_input, Scrollable},
     Command,
@@ -86,11 +86,13 @@ impl ActionsSearch {
     pub fn run_selected(&self) {
         let Some(to_run) = &self.selected else { return };
 
-        match to_run.run() {
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("Error launching: {}", e)
-            }
+        let ran = match **to_run {
+            Action::Application(ref a) => run_application(a).map(|_| ()),
+            Action::ShellCommand(ref cmd) => run_shell_command(cmd, true).map(|_| ()),
+        };
+
+        if let Err(e) = ran {
+            eprintln!("Error launching: {}", e)
         }
     }
 }
@@ -106,7 +108,7 @@ impl SearchType {
             SearchType::ActionSubmenu(actions) | SearchType::ApplicationLaunch(actions) => {
                 actions.update(message)
             }
-            SearchType::JavascriptRepl(_) => todo!(),
+            SearchType::JavascriptRepl(repl) => repl.update(message),
         }
     }
 }

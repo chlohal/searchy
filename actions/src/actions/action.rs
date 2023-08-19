@@ -26,7 +26,7 @@ impl Action {
     pub fn run(&self) -> Result<(), String> {
         match self {
             Action::Application(a) => run_application(a).map(|_| ()),
-            Action::ShellCommand(cmd) => run_shell_command(cmd).map(|_| ()),
+            Action::ShellCommand(cmd) => run_shell_command(cmd, true).map(|_| ()),
         }
     }
 
