@@ -12,7 +12,10 @@ use messages::Message;
 use results::{results_view, ActionsSearch, SearchType};
 use std::{collections::VecDeque, sync::Arc, time::Instant};
 
-use actions::{actions::{action_database::ActionDatabase, Action}, varieties::path_executables::run_shell_command::run_shell_command};
+use actions::{
+    actions::{action_database::ActionDatabase, Action},
+    varieties::path_executables::run_shell_command::run_shell_command,
+};
 use ipc_communication::message::IpcMessage;
 
 use iced_keyboard_capture::keyboard_capture;
@@ -23,8 +26,9 @@ static MS_BETWEEN_SEARCHES: u128 = 60;
 pub fn open_window(actions: Arc<ActionDatabase>) -> Result<(), iced::Error> {
     let mut settings = Settings::with_flags(actions);
     settings.window.decorations = false;
-    settings.window.always_on_top = true;
-    settings.window.visible = false;
+    settings.window.visible = true;
+    settings.window.resizable = false;
+    settings.window.platform_specific.application_id = "Searchy".into();
     settings.exit_on_close_request = false;
     settings.id = Some("searchy".to_string());
     settings.window.position = Position::Centered;
@@ -33,6 +37,8 @@ pub fn open_window(actions: Arc<ActionDatabase>) -> Result<(), iced::Error> {
 }
 
 pub struct SearchingWindow {
+    pub loading: bool,
+    pub last_open: Instant,
     pub last_search: Instant,
     pub search_query: String,
     pub do_type_stack: VecDeque<SearchType>,
@@ -48,6 +54,8 @@ impl Application for SearchingWindow {
         let results = init_data.iter().cloned().collect::<Vec<Arc<Action>>>();
         (
             SearchingWindow {
+                loading: true,
+                last_open: Instant::now(),
                 last_search: Instant::now(),
                 search_query: "".into(),
                 do_type_stack: {
@@ -62,8 +70,12 @@ impl Application for SearchingWindow {
                 },
             },
             Command::batch(vec![
+                iced::font::load(icons::FONT_BRANDS_TTF_BYTES).map(|r| { eprintln!("{:?}", r); Message::GenericKey }),
+                iced::font::load(icons::FONT_REGULAR_TTF_BYTES).map(|_| Message::GenericKey),
+                iced::font::load(icons::FONT_SOLID_TTF_BYTES).map(|_| Message::GenericKey),
                 scrollable::snap_to(SCROLLABLE_ID.clone(), scrollable::RelativeOffset::START),
                 text_input::focus(SEARCHBOX_ID.clone()),
+                Command::perform(async { Ok(()) }, |_: Result<_, ()>| Message::Loaded),
             ]),
         )
     }
@@ -77,19 +89,30 @@ impl Application for SearchingWindow {
     }
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Message> {
+        if let Message::Loaded = message { self.loading = false; }
+        if self.loading { return Command::none(); }
+
         match message {
+            Message::Loaded => Command::none(),
             Message::GenericKey => text_input::focus(SEARCHBOX_ID.clone()),
             Message::HideWindow => {
                 self.reset_state();
                 window::change_mode(window::Mode::Hidden)
             }
             Message::Ipc(ipc_message) => match ipc_message {
-                IpcMessage::OpenWindow => Command::batch(vec![
-                    window::gain_focus(),
-                    scrollable::snap_to(SCROLLABLE_ID.clone(), scrollable::RelativeOffset::START),
-                    text_input::focus(SEARCHBOX_ID.clone()),
-                    window::change_mode(window::Mode::Windowed),
-                ]),
+                IpcMessage::OpenWindow => {
+                    self.last_open = Instant::now();
+
+                    Command::batch(vec![
+                        window::gain_focus(),
+                        scrollable::snap_to(
+                            SCROLLABLE_ID.clone(),
+                            scrollable::RelativeOffset::START,
+                        ),
+                        text_input::focus(SEARCHBOX_ID.clone()),
+                        window::change_mode(window::Mode::Windowed),
+                    ])
+                }
                 IpcMessage::CloseProgram => window::close(),
                 IpcMessage::Refresh => Command::none(),
                 IpcMessage::AppSearch => {
@@ -119,7 +142,7 @@ impl Application for SearchingWindow {
             Message::ExecuteTypeShell => {
                 log_err(run_shell_command(self.search_query.clone(), false));
                 Command::perform((|| async { Message::HideWindow })(), |x| x)
-            },
+            }
             Message::ExecuteTypeTerminal => {
                 log_err(run_shell_command(self.search_query.clone(), true));
                 Command::perform((|| async { Message::HideWindow })(), |x| x)
@@ -132,11 +155,23 @@ impl Application for SearchingWindow {
 
         let scrollbox = results_view(&self.do_type_stack.back().unwrap());
 
-        let close_listener = close_requested_listener().on_close(|| Some(Message::HideWindow));
+        let close_listener = close_requested_listener::<Message, _>().on_close(|| {
+            if Instant::now()
+                .saturating_duration_since(self.last_open)
+                .as_millis()
+                > 1000
+            {
+                Some(Message::HideWindow)
+            } else {
+                None
+            }
+        });
 
-        let key_eventer = keyboard_capture().on_key_event(key_shortcuts::handle_key_event);
+        let key_eventer =
+            keyboard_capture::<Message, _>().on_key_event(key_shortcuts::handle_key_event);
 
-        let page = column!(close_listener, key_eventer, searchbox, scrollbox).align_items(Alignment::Center);
+        let page = column!(close_listener, key_eventer, searchbox, scrollbox)
+            .align_items(Alignment::Center);
 
         page.into()
     }
@@ -161,7 +196,6 @@ impl SearchingWindow {
         }
     }
 }
-
 
 fn log_err<T, E: std::fmt::Debug>(err: Result<T, E>) {
     if let Err(err) = err {

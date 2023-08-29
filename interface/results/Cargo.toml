@@ -9,7 +9,7 @@ edition = "2021"
 interface_scrolling = { path = "../scrolling" }
 interface_searchbox = { path = "../searchbox" }
 actions = { path = "../../actions" }
-iced = "0.9.0"
-iced_native = "0.10.3"
+iced = "0.10"
+iced_native = "0.10.0"
 messages = { path = "../messages" }
 javascript_repl_history = { path = "../javascript_repl_history" }

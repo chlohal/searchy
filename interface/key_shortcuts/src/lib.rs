@@ -1,4 +1,4 @@
-use iced::keyboard::{Event, KeyCode};
+use iced_core::keyboard::{Event, KeyCode};
 use ipc_communication::message::IpcMessage::Javascript;
 use match_friendly_modifier::{match_friendly_modifier, NONE, CTRL, CTRL_SHIFT};
 use messages::{Message, SearchResultMessage};

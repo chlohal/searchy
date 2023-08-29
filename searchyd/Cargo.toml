@@ -11,8 +11,9 @@ path = "src/main.rs"
 ipc_communication = { path = "../ipc_communication" }
 actions = { path = "../actions" }
 iced_keyboard_capture = { path = "../iced_keyboard_capture" }
-iced = "0.9"
+iced = "0.10.0"
 iced_native = "0.10.3"
+iced_wgpu = "0.11.1"
 once_cell = "1.17.1"
 interface_scrolling = { path = "../interface/scrolling" }
 messages = { path = "../interface/messages" }
@@ -22,3 +23,4 @@ key_shortcuts = { path = "../interface/key_shortcuts" }
 results = { path = "../interface/results" }
 javascript_repl_history = { path = "../interface/javascript_repl_history" }
 iced_close_requested_listener = { path = "../iced_close_requested_listener" }
+icons = { path = "../interface/icons" }

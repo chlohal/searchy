@@ -25,7 +25,7 @@ pub fn searchbox(content: &String) -> Container<'static, Message> {
         Appearance {
             text_color: None,
             background: Some(Background::Color(COLOR_DARK_BG.into())),
-            border_radius: 0.0,
+            border_radius: 0.0.into(),
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
         }

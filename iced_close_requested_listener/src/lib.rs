@@ -2,18 +2,16 @@
 
 use std::marker::PhantomData;
 
-use iced::{event, Element, Event};
-
-use iced_native::{
-    window::Event::{CloseRequested, Unfocused},
-    Length, Size, Widget,
+use iced_core::{
+    event,
+    layout::{self, Layout},
+    mouse, widget, Clipboard, Element, Event, Length, Rectangle, Renderer, Shell, Size,
+    Widget, renderer,
+    window::Event::{CloseRequested, Unfocused}
 };
 
 pub fn close_requested_listener<'a, Message, Renderer>(
-) -> CloseRequestedListener<'a, Message, Renderer>
-where
-    Renderer: iced_native::Renderer,
-{
+) -> CloseRequestedListener<'a, Message, Renderer> {
     CloseRequestedListener::new()
 }
 
@@ -42,11 +40,11 @@ impl<'a, Message, Renderer> Default for CloseRequestedListener<'a, Message, Rend
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer>
-    for CloseRequestedListener<'a, Message, Renderer>
+impl<'a, Message, R> Widget<Message, R>
+    for CloseRequestedListener<'a, Message, R>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    R: Renderer,
 {
     fn width(&self) -> Length {
         Length::Fixed(0.0)
@@ -58,21 +56,22 @@ where
 
     fn layout(
         &self,
-        _renderer: &Renderer,
-        _limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
-        iced_native::layout::Node::new(Size::ZERO)
+        _renderer: &R,
+        _limits: &layout::Limits,
+    ) -> layout::Node {
+        layout::Node::new(Size::ZERO)
     }
 
     fn on_event(
         &mut self,
-        _state: &mut iced_native::widget::Tree,
+        _state: &mut widget::Tree,
         event: Event,
-        _layout: iced_native::Layout<'_>,
-        _cursor_position: iced_native::Point,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn iced_native::Clipboard,
-        shell: &mut iced_native::Shell<'_, Message>,
+        _layout: Layout<'_>,
+        _cursor_position: mouse::Cursor,
+        _renderer: &R,
+        _clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        _viewport: &Rectangle,
     ) -> event::Status {
         if let Event::Window(CloseRequested | Unfocused) = event {
             let Some(on_close) = &self.on_close else { return event::Status::Ignored };
@@ -87,24 +86,24 @@ where
 
     fn draw(
         &self,
-        _state: &iced_native::widget::Tree,
-        _renderer: &mut Renderer,
-        _theme: &<Renderer as iced_native::Renderer>::Theme,
-        _style: &iced_native::renderer::Style,
-        _layout: iced_native::Layout<'_>,
-        _cursor_position: iced_native::Point,
-        _viewport: &iced_native::Rectangle,
+        _state: &widget::Tree,
+        _renderer: &mut R,
+        _theme: &<R as Renderer>::Theme,
+        _style: &renderer::Style,
+        _layout: Layout<'_>,
+        _cursor_position: mouse::Cursor,
+        _viewport: &Rectangle,
     ) {
     }
 }
 
-impl<'a, Message, Renderer> From<CloseRequestedListener<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, R> From<CloseRequestedListener<'a, Message, R>>
+    for Element<'a, Message, R>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    R: 'a + Renderer,
 {
-    fn from(area: CloseRequestedListener<'a, Message, Renderer>) -> Element<'a, Message, Renderer> {
+    fn from(area: CloseRequestedListener<'a, Message, R>) -> Element<'a, Message, R> {
         Element::new(area)
     }
 }

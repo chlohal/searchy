@@ -1,4 +1,4 @@
-use iced::keyboard::Modifiers;
+use iced_core::keyboard::Modifiers;
 
 pub const NONE: u8 = 0;
 

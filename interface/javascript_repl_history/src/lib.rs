@@ -1,5 +1,4 @@
-use iced::widget::{Scrollable, scrollable};
-use iced_native::Command;
+use iced::{widget::{Scrollable, scrollable}, Command};
 use messages::Message;
 
 pub struct ReplInput {

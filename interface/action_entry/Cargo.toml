@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 actions = { path = "../../actions" }
-iced = "0.9"
+iced = "0.10"
 icons = { path = "../icons" }
 messages = { path = "../messages" }
 styling = { path = "../styling" }

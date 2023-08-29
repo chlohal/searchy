@@ -1,20 +1,20 @@
-//! A container for capturing mouse events.
+//! A container for capturing keyboard events.
 
 use std::marker::PhantomData;
 
-use iced::{event, keyboard, Element, Event};
+use iced_core::{
+    event, keyboard,
+    layout::{self, Layout},
+    mouse, widget, Clipboard, Element, Event, Length, Rectangle, Renderer, Shell, Size,
+    Widget, renderer
+};
 
-use iced_native::{Length, Size, Widget};
-
-
-
-pub fn keyboard_capture<'a, Message, Renderer>() -> KeyboardCapture<'a, Message, Renderer>
+pub fn keyboard_capture<'a, M, R>() -> KeyboardCapture<'a, M, R>
 where
-    Renderer: iced_native::Renderer,
+    R: Renderer,
 {
     KeyboardCapture::new()
 }
-
 
 pub struct KeyboardCapture<'a, Message, Renderer> {
     on_key_event: Option<Box<dyn Fn(keyboard::Event) -> Option<Message> + 'a>>,
@@ -41,10 +41,10 @@ impl<'a, Message, Renderer> Default for KeyboardCapture<'a, Message, Renderer> {
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for KeyboardCapture<'a, Message, Renderer>
+impl<'a, Message, R> Widget<Message, R> for KeyboardCapture<'a, Message, R>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    R: Renderer,
 {
     fn width(&self) -> Length {
         Length::Fixed(0.0)
@@ -54,23 +54,20 @@ where
         Length::Fixed(0.0)
     }
 
-    fn layout(
-        &self,
-        _renderer: &Renderer,
-        _limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
-        iced_native::layout::Node::new(Size::ZERO)
+    fn layout(&self, _renderer: &R, _limits: &layout::Limits) -> layout::Node {
+        layout::Node::new(Size::ZERO)
     }
 
     fn on_event(
         &mut self,
-        _state: &mut iced_native::widget::Tree,
+        _state: &mut widget::Tree,
         event: Event,
-        _layout: iced_native::Layout<'_>,
-        _cursor_position: iced_native::Point,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn iced_native::Clipboard,
-        shell: &mut iced_native::Shell<'_, Message>,
+        _layout: Layout<'_>,
+        _cursor_position: mouse::Cursor,
+        _renderer: &R,
+        _clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        _viewport: &Rectangle,
     ) -> event::Status {
         let Event::Keyboard(k) = event else { return event::Status::Ignored };
 
@@ -78,31 +75,30 @@ where
 
         if let Some(message) = on_key_event(k) {
             shell.publish(message);
-            return event::Status::Captured
+            return event::Status::Captured;
         }
         event::Status::Ignored
     }
 
     fn draw(
         &self,
-        _state: &iced_native::widget::Tree,
-        _renderer: &mut Renderer,
-        _theme: &<Renderer as iced_native::Renderer>::Theme,
-        _style: &iced_native::renderer::Style,
-        _layout: iced_native::Layout<'_>,
-        _cursor_position: iced_native::Point,
-        _viewport: &iced_native::Rectangle,
+        _state: &widget::Tree,
+        _renderer: &mut R,
+        _theme: &<R as Renderer>::Theme,
+        _style: &renderer::Style,
+        _layout: Layout<'_>,
+        _cursor_position: mouse::Cursor,
+        _viewport: &Rectangle,
     ) {
     }
 }
 
-impl<'a, Message, Renderer> From<KeyboardCapture<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, R> From<KeyboardCapture<'a, Message, R>> for Element<'a, Message, R>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    R: 'a + Renderer,
 {
-    fn from(area: KeyboardCapture<'a, Message, Renderer>) -> Element<'a, Message, Renderer> {
+    fn from(area: KeyboardCapture<'a, Message, R>) -> Element<'a, Message, R> {
         Element::new(area)
     }
 }

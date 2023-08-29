@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = "0.9"
-iced_native = "0.10.3"
+iced = "0.10"
+iced_native = "0.10.0"
 messages = { path = "../interface/messages" }
 ipc_communication = { path = "../ipc_communication" }

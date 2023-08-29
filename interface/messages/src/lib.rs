@@ -11,7 +11,8 @@ pub enum Message {
     HideWindow,
     GenericKey,
     ExecuteTypeShell,
-    ExecuteTypeTerminal
+    ExecuteTypeTerminal,
+    Loaded
 }
 
 #[derive(Debug, Clone)]

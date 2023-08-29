@@ -18,8 +18,6 @@ pub fn run_shell_command(command_name: impl Into<OsString>, open_terminal: bool)
         .arg("-c")
         .arg(bash_command);
 
-    eprintln!("{:?}", cmd);
-
     let child = cmd.stdout(Stdio::null())
         .stderr(Stdio::null())
         .stdin(Stdio::null())

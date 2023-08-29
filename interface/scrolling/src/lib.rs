@@ -7,7 +7,7 @@ use iced::{
         container, container::Appearance, mouse_area, scrollable, scrollable::Properties,
         vertical_space, Column, Scrollable,
     },
-    Alignment, Background, Color, Command, Element, Length, Theme,
+    Alignment, Background, Color, Command, Element, Length, Theme, BorderRadius,
 };
 
 pub static PAGE_SIZE: usize = 5;
@@ -25,8 +25,6 @@ pub static SCROLLABLE_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::uniqu
 pub fn scroll_to_view(index: usize, total_count: usize) -> Command<Message> {
     let index_pc = ((index + PAGE_SIZE) as f32) / (total_count as f32);
 
-    eprintln!("{}", index_pc);
-
     scrollable::snap_to(
         SCROLLABLE_ID.clone(),
         scrollable::RelativeOffset {
@@ -43,8 +41,8 @@ pub fn results_scrollbox(
 ) -> Scrollable<'static, Message> {
     scrollable_subset_from(results, scroll_top, selected)
         .height(Length::Fill)
-        .vertical_scroll(Properties::new())
-        .on_scroll(|offset| Message::ResultMessage(SearchResultMessage::Scroll(offset.y)))
+        .direction(scrollable::Direction::Vertical(Properties::new()))
+        .on_scroll(|offset| Message::ResultMessage(SearchResultMessage::Scroll(offset.relative_offset().y)))
         .id(SCROLLABLE_ID.clone())
 }
 
@@ -112,7 +110,7 @@ fn selected_entry(_: &Theme) -> Appearance {
     Appearance {
         text_color: None,
         background: Some(Background::Color(COLOR_HIGHLIGHT_BG.into())),
-        border_radius: 0.0,
+        border_radius: BorderRadius::from(0.0),
         border_width: 0.0,
         border_color: Color::TRANSPARENT,
     }
