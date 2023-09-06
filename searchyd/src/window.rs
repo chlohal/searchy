@@ -26,7 +26,7 @@ static MS_BETWEEN_SEARCHES: u128 = 60;
 pub fn open_window(actions: Arc<ActionDatabase>) -> Result<(), iced::Error> {
     let mut settings = Settings::with_flags(actions);
     settings.window.decorations = false;
-    settings.window.visible = true;
+    settings.window.visible = false;
     settings.window.resizable = false;
     settings.window.platform_specific.application_id = "Searchy".into();
     settings.exit_on_close_request = false;
@@ -69,8 +69,8 @@ impl Application for SearchingWindow {
                     stack
                 },
             },
-            Command::batch(vec![
-                iced::font::load(icons::FONT_BRANDS_TTF_BYTES).map(|r| { eprintln!("{:?}", r); Message::GenericKey }),
+            Command::batch([
+                iced::font::load(icons::FONT_BRANDS_TTF_BYTES).map(|_| { Message::GenericKey }),
                 iced::font::load(icons::FONT_REGULAR_TTF_BYTES).map(|_| Message::GenericKey),
                 iced::font::load(icons::FONT_SOLID_TTF_BYTES).map(|_| Message::GenericKey),
                 scrollable::snap_to(SCROLLABLE_ID.clone(), scrollable::RelativeOffset::START),
@@ -89,6 +89,9 @@ impl Application for SearchingWindow {
     }
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Message> {
+
+        println!("{:?}", message);
+
         if let Message::Loaded = message { self.loading = false; }
         if self.loading { return Command::none(); }
 
@@ -96,21 +99,25 @@ impl Application for SearchingWindow {
             Message::Loaded => Command::none(),
             Message::GenericKey => text_input::focus(SEARCHBOX_ID.clone()),
             Message::HideWindow => {
+                eprintln!("Attempting to hide");
                 self.reset_state();
-                window::change_mode(window::Mode::Hidden)
+                //window::minimize(true)
+                Command::none()
             }
             Message::Ipc(ipc_message) => match ipc_message {
                 IpcMessage::OpenWindow => {
                     self.last_open = Instant::now();
 
-                    Command::batch(vec![
-                        window::gain_focus(),
+                    eprintln!("Attempting to show");
+                    Command::batch([
+                        window::change_mode(window::Mode::Fullscreen),
+                        window::minimize(false),
+                        //window::gain_focus(),
                         scrollable::snap_to(
                             SCROLLABLE_ID.clone(),
                             scrollable::RelativeOffset::START,
                         ),
                         text_input::focus(SEARCHBOX_ID.clone()),
-                        window::change_mode(window::Mode::Windowed),
                     ])
                 }
                 IpcMessage::CloseProgram => window::close(),
@@ -151,6 +158,9 @@ impl Application for SearchingWindow {
     }
 
     fn view(&self) -> Element<Self::Message> {
+
+        if self.loading { return "".into(); }
+
         let searchbox = searchbox(&self.search_query);
 
         let scrollbox = results_view(&self.do_type_stack.back().unwrap());

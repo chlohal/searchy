@@ -3,7 +3,7 @@ use std::sync::Arc;
 use ::actions::{Action, Action::Application, Action::ShellCommand};
 use iced::{
     widget::{container, row, text, Row, Text},
-    Font, Length, font::Weight,
+    Font, Length,
 };
 use icons::Icon;
 use messages::Message;
@@ -39,12 +39,7 @@ fn detail(action: &Arc<Action>) -> Row<'static, Message> {
 
 fn iced_icon(icon: &Icon) -> Text<'static> {
     text(icon.0)
-        .font(Font {
-            family: iced::font::Family::Name(icon.1.name),
-            weight: if icon.1.bold { Weight::Bold } else { Weight::Normal },
-            stretch: iced::font::Stretch::Normal,
-            monospaced: false,
-        })
+        .font(Font::with_name(icon.1.name))
         .width(20)
         .vertical_alignment(iced::alignment::Vertical::Center)
         .horizontal_alignment(iced::alignment::Horizontal::Center)

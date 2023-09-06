@@ -35,6 +35,7 @@ fn accept_into_queue(listener: UnixListener, mut message_queue: Sender<Message>)
         for stream in listener.incoming() {
             match stream_to_ipc_message(stream.unwrap()) {
                 Ok(ipc) => {
+                    println!("ipc: {}", ipc);
                     block_on(message_queue.send(Message::Ipc(ipc))).unwrap();
                 }
                 Err(e) => {

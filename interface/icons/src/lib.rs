@@ -11,17 +11,17 @@ pub const FONT_SOLID_TTF_BYTES: &[u8] = include_bytes!("../../../assets/fonts/fa
 
 
 pub const FONT_BRANDS: Font = Font {
-    name: "FontAwesome Brands",
+    name: "Font Awesome 6 Brands Regular",
     bold: false
 };
 
 pub const FONT_REGULAR: Font = Font {
-    name: "FontAwesome Regular",
+    name: "Font Awesome 6 Free Regular",
     bold: false
 };
 
 pub const FONT_SOLID: Font = Font {
-    name: "FontAwesome Solid",
+    name: "Font Awesome 6 Free Solid",
     bold: true
 };
 
